@@ -67,3 +67,4 @@ npm run dev
 ## Security note (demo only)
 
 The **service_role** key bypasses database security rules. Keep it in `.env.local` only — never commit it or paste it into the browser.
+# Matrix-V1-Prototype
