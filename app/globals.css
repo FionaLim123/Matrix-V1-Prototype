@@ -1,3 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Emery passive lessons prototype: allow full-width layout inside root <main> */
+main:has(.mp-emery-prototype-shell) {
+  max-width: none;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+}
+
+/* Buttons look like text links (tailwind preflight off → otherwise default button = pale “overlay”). */
+.mp-emery-prototype-shell button.emery-text-link {
+  appearance: none;
+  -webkit-appearance: none;
+  margin: 0;
+  padding: 0.125rem 0.25rem;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  font: inherit;
+  line-height: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.mp-emery-prototype-shell button.emery-text-link::-moz-focus-inner {
+  border: 0;
+  padding: 0;
+}
+
+.mp-emery-prototype-shell button.emery-text-link:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.75);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
 :root {
   --bg: #0f1419;
   --surface: #1a2332;
@@ -520,3 +558,749 @@ code {
   margin: 0;
   font-size: 0.8rem;
 }
+
+/* Matrix+ V1 — demo shell (scoped, does not change rest of app) */
+.matrix-v1-shell {
+  position: relative;
+  padding-bottom: 2rem;
+}
+
+.matrix-v1-shell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(rgba(61, 139, 253, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(61, 139, 253, 0.04) 1px, transparent 1px);
+  background-size: 28px 28px;
+  pointer-events: none;
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.35), transparent 58%);
+  border-radius: 12px;
+}
+
+.matrix-v1-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(61, 139, 253, 0.22);
+}
+
+.matrix-v1-brand {
+  position: relative;
+  z-index: 1;
+}
+
+.matrix-v1-product {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.matrix-v1-tagline {
+  margin: 0.25rem 0 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+  max-width: 26rem;
+  line-height: 1.45;
+}
+
+.matrix-v1-nav {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  max-width: min(42rem, 100%);
+  justify-content: flex-end;
+}
+
+.matrix-v1-nav-fallback {
+  min-height: 1.25rem;
+}
+
+.matrix-v1-nav a {
+  color: var(--muted);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.matrix-v1-nav a:hover {
+  color: var(--accent);
+}
+
+.matrix-v1-nav-sep {
+  color: var(--border);
+  user-select: none;
+}
+
+.matrix-v1-overview .matrix-v1-page-title {
+  margin-bottom: 0.65rem;
+}
+
+.matrix-v1-lead {
+  margin: 0 0 1rem;
+  max-width: 38rem;
+  font-size: 1.05rem;
+  line-height: 1.55;
+  color: var(--text);
+}
+
+.matrix-v1-primary-link {
+  display: inline-block;
+  padding: 0.65rem 1.25rem;
+  border-radius: 10px;
+  background: linear-gradient(165deg, rgba(61, 139, 253, 0.2), rgba(61, 139, 253, 0.06));
+  border: 1px solid rgba(61, 139, 253, 0.45);
+  color: #b8d9ff;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.matrix-v1-primary-link:hover {
+  border-color: var(--accent);
+  color: var(--text);
+  text-decoration: none;
+}
+
+.matrix-v1-lessons {
+  position: relative;
+  z-index: 1;
+  max-width: 42rem;
+}
+
+/**
+ * Matrix+ /matrix-v1/student — presentation guardrails (scoped to .matrix-v1-student-lessons):
+ * 1) Lessons-first: page heading + "Your lessons" + list are the primary surface; Today's focus is a
+ *    compact strip on that column, not a hero or second app.
+ * 2) Controlled visual weight: moderate padding and border contrast; no hero shadow; minimal separation
+ *    from the lesson list.
+ * 3) Lesson list is the main body: do not change module/row/badge/quiz structure — only spacing around it here.
+ */
+.matrix-v1-student-lessons .matrix-v1-student-page-heading {
+  font-size: 1.35rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  margin: 0 0 0.5rem;
+  line-height: 1.2;
+  color: var(--text);
+}
+
+.matrix-v1-student-lessons .matrix-v1-lessons-embedded {
+  border: 1px solid rgba(60, 76, 99, 0.5);
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(22, 30, 44, 0.45);
+}
+
+.matrix-v1-student-lessons .matrix-v1-lessons-embedded .matrix-focus-overlay {
+  margin-bottom: 0;
+}
+
+.matrix-v1-student-lessons .matrix-v1-lessons-embedded .matrix-focus-card.card {
+  margin-bottom: 0;
+  border-radius: 0;
+  box-shadow: none;
+  border: none;
+  border-bottom: 1px solid rgba(60, 76, 99, 0.45);
+  padding: 0.85rem 1rem 0.85rem;
+}
+
+.matrix-v1-student-lessons .matrix-v1-lessons-embedded .matrix-focus-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 0 0 0.45rem;
+  letter-spacing: -0.01em;
+}
+
+.matrix-v1-student-lessons .matrix-v1-lessons-embedded .matrix-focus-eyebrow {
+  margin: 0 0 0.4rem;
+  font-size: 0.68rem;
+}
+
+.matrix-v1-student-lessons .matrix-v1-lessons-embedded .matrix-focus-eyebrow-named .matrix-focus-eyebrow-uc {
+  letter-spacing: 0.12em;
+}
+
+.matrix-v1-student-lessons .matrix-v1-lessons-embedded .matrix-focus-detail,
+.matrix-v1-student-lessons .matrix-v1-lessons-embedded .matrix-focus-why,
+.matrix-v1-student-lessons .matrix-v1-lessons-embedded .matrix-focus-next,
+.matrix-v1-student-lessons .matrix-v1-lessons-embedded .matrix-focus-support {
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.matrix-v1-student-lessons .matrix-v1-lessons-embedded .matrix-focus-why,
+.matrix-v1-student-lessons .matrix-v1-lessons-embedded .matrix-focus-next,
+.matrix-v1-student-lessons .matrix-v1-lessons-embedded .matrix-focus-support {
+  margin-top: 0.65rem;
+}
+
+.matrix-v1-student-lessons .matrix-v1-lessons-embedded .matrix-focus-card--intervention {
+  background: linear-gradient(180deg, rgba(255, 179, 64, 0.06), rgba(26, 35, 50, 0.12));
+}
+
+.matrix-v1-student-lessons .matrix-v1-lessons-embedded .matrix-focus-card--nudge {
+  background: linear-gradient(180deg, rgba(52, 199, 89, 0.07), rgba(26, 35, 50, 0.12));
+}
+
+.matrix-v1-student-lessons .matrix-v1-lessons-embedded .matrix-focus-card--ontrack {
+  background: linear-gradient(180deg, rgba(100, 181, 246, 0.07), rgba(26, 35, 50, 0.12));
+}
+
+.matrix-v1-student-lessons .matrix-v1-lessons-embedded .matrix-focus-card--empty {
+  background: linear-gradient(180deg, rgba(142, 142, 147, 0.05), rgba(26, 35, 50, 0.12));
+}
+
+.matrix-v1-student-lessons .matrix-v1-lessons-embedded .matrix-lessons-board {
+  margin-bottom: 0;
+  padding: 0.5rem 1rem 1rem;
+}
+
+.matrix-v1-student-lessons .matrix-v1-lessons-embedded .matrix-lessons-board-head {
+  margin-bottom: 0.65rem;
+}
+
+.matrix-v1-student-lessons .matrix-v1-lessons-embedded .matrix-lessons-board-title {
+  font-size: 1.2rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  margin: 0 0 0.3rem;
+}
+
+
+.matrix-v1-page-title {
+  font-size: 1.6rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  margin: 0 0 1.25rem;
+}
+
+.matrix-focus-overlay {
+  margin-bottom: 2rem;
+}
+
+.matrix-focus-card {
+  border-color: rgba(52, 199, 89, 0.35);
+  background: linear-gradient(155deg, rgba(52, 199, 89, 0.12), rgba(61, 139, 253, 0.06) 42%, transparent 72%);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.22);
+}
+
+.matrix-focus-eyebrow {
+  margin: 0 0 0.65rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #9ee6b3;
+}
+
+/* “Today’s focus, Alex Rivera” — keep student name in normal case on /matrix-v1/student */
+.matrix-focus-eyebrow-named {
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.matrix-focus-eyebrow-named .matrix-focus-eyebrow-uc {
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+.matrix-focus-greeting {
+  margin: 0 0 1rem;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: var(--text);
+}
+
+.matrix-focus-title {
+  margin: 0 0 0.6rem;
+  font-size: 1.35rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  color: var(--text);
+}
+
+.matrix-focus-detail {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: var(--text);
+}
+
+.matrix-focus-why {
+  margin: 1rem 0 0;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: var(--text);
+}
+
+.matrix-focus-why-label {
+  font-weight: 600;
+}
+
+.matrix-focus-next {
+  margin: 1rem 0 0;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: var(--text);
+}
+
+.matrix-focus-next-label {
+  font-weight: 600;
+}
+
+.matrix-focus-jump {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--link, #6db3ff);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.matrix-focus-jump:hover {
+  text-decoration: underline;
+}
+
+.matrix-focus-card--intervention {
+  border-color: rgba(255, 179, 64, 0.45);
+  background: linear-gradient(155deg, rgba(255, 179, 64, 0.12), rgba(61, 139, 253, 0.06) 42%, transparent 72%);
+}
+
+.matrix-focus-card--nudge {
+  border-color: rgba(52, 199, 89, 0.45);
+  background: linear-gradient(155deg, rgba(52, 199, 89, 0.14), rgba(61, 139, 253, 0.06) 42%, transparent 72%);
+}
+
+.matrix-focus-card--ontrack {
+  border-color: rgba(100, 181, 246, 0.4);
+  background: linear-gradient(155deg, rgba(100, 181, 246, 0.12), rgba(52, 199, 89, 0.06) 42%, transparent 72%);
+}
+
+.matrix-focus-card--empty {
+  border-color: rgba(142, 142, 147, 0.35);
+  background: linear-gradient(155deg, rgba(142, 142, 147, 0.1), rgba(61, 139, 253, 0.04) 42%, transparent 72%);
+}
+
+.matrix-focus-extra {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.matrix-focus-extra-label {
+  font-size: 0.8rem;
+}
+
+.matrix-lessons-board {
+  margin-bottom: 1.5rem;
+}
+
+.matrix-lessons-board-head {
+  margin-bottom: 1rem;
+}
+
+.matrix-lessons-board-title {
+  margin: 0 0 0.35rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.matrix-lessons-board-sub {
+  font-size: 0.85rem;
+}
+
+.matrix-lesson-panels {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.matrix-module-panel {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(26, 35, 50, 0.65);
+  overflow: hidden;
+}
+
+.matrix-module-panel-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 1rem 0.65rem 0.85rem;
+  border-bottom: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.matrix-module-title {
+  margin: 0;
+  font-size: 0.98rem;
+  font-weight: 600;
+  flex: 1;
+  min-width: 0;
+}
+
+.matrix-module-accent {
+  flex-shrink: 0;
+  width: 4px;
+  align-self: stretch;
+  min-height: 2rem;
+  border-radius: 999px;
+  background: linear-gradient(to bottom, #34c759, #3d8bfd);
+  opacity: 0.85;
+}
+
+.matrix-lesson-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.matrix-lesson-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.65rem 1rem;
+  padding: 0.65rem 1rem;
+  border-bottom: 1px solid rgba(45, 58, 77, 0.7);
+  scroll-margin-top: 1.25rem;
+}
+
+.matrix-lesson-row:last-child {
+  border-bottom: none;
+}
+
+.matrix-lesson-main {
+  min-width: 0;
+  flex: 1;
+}
+
+.matrix-lesson-title {
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.matrix-lesson-revision {
+  font-size: 0.65rem;
+  vertical-align: middle;
+}
+
+.matrix-lesson-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem 0.75rem;
+  justify-content: flex-end;
+}
+
+.matrix-lesson-quiz {
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+
+.matrix-v1-placeholder {
+  position: relative;
+  z-index: 1;
+  max-width: 42rem;
+}
+
+/* Matrix+ staff cohort (business-facing, calm) */
+.matrix-v1-staff {
+  position: relative;
+  z-index: 1;
+  max-width: 52rem;
+}
+
+.matrix-staff-lead .matrix-v1-page-title {
+  margin-bottom: 0.35rem;
+}
+
+.matrix-staff-lead {
+  margin-bottom: 1.1rem;
+}
+
+.matrix-staff-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.85rem;
+  margin-bottom: 1.75rem;
+}
+
+@media (max-width: 52rem) {
+  .matrix-staff-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+.matrix-staff-cohort-card {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  padding: 1rem 1.05rem;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+.matrix-staff-cohort-card:hover {
+  text-decoration: none;
+  border-color: rgba(61, 139, 253, 0.55);
+  background-color: rgba(61, 139, 253, 0.06);
+  box-shadow: 0 0 0 1px rgba(61, 139, 253, 0.12);
+}
+
+.matrix-staff-summary-card-active {
+  border-color: rgba(61, 139, 253, 0.55);
+  box-shadow: 0 0 0 1px rgba(61, 139, 253, 0.2);
+}
+
+.matrix-staff-summary-eyebrow {
+  margin: 0 0 0.45rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.matrix-staff-summary-count {
+  margin: 0 0 0.15rem;
+  font-size: 1.65rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--text);
+}
+
+.matrix-staff-summary-pct {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.matrix-staff-summary-meta {
+  margin: 0 0 0.55rem;
+  font-size: 0.78rem;
+}
+
+.matrix-staff-summary-desc {
+  margin: 0;
+  font-size: 0.84rem;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.matrix-staff-table-section {
+  margin-bottom: 1.25rem;
+}
+
+.matrix-staff-table-wrap {
+  overflow-x: auto;
+  padding: 0;
+}
+
+.matrix-staff-table {
+  font-size: 0.82rem;
+  min-width: 44rem;
+}
+
+.matrix-staff-table th {
+  white-space: nowrap;
+}
+
+.matrix-staff-table td {
+  vertical-align: top;
+}
+
+.matrix-staff-nowrap {
+  white-space: nowrap;
+}
+
+.matrix-staff-suggestion-title {
+  display: block;
+  font-size: 0.84rem;
+  margin-bottom: 0.25rem;
+}
+
+.matrix-staff-suggestion-detail {
+  font-size: 0.78rem;
+  line-height: 1.45;
+  max-width: 18rem;
+}
+
+.matrix-risk-tag {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+}
+
+.matrix-risk-low {
+  color: #9ee6b3;
+  border-color: rgba(52, 199, 89, 0.45);
+  background: rgba(52, 199, 89, 0.08);
+}
+
+.matrix-risk-medium {
+  color: #ffd08a;
+  border-color: rgba(255, 159, 10, 0.45);
+  background: rgba(255, 159, 10, 0.08);
+}
+
+.matrix-risk-high {
+  color: #ffb4b4;
+  border-color: rgba(255, 107, 107, 0.45);
+  background: rgba(255, 107, 107, 0.08);
+}
+
+.matrix-staff-show-all {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.matrix-staff-how {
+  margin-top: 1rem;
+}
+
+.matrix-staff-how-list {
+  margin: 0;
+  padding-left: 1.2rem;
+  line-height: 1.55;
+  font-size: 0.88rem;
+  color: var(--text);
+}
+
+.matrix-staff-how-list li {
+  margin-bottom: 0.5rem;
+}
+
+.matrix-v1-secondary-link {
+  display: inline-block;
+  padding: 0.65rem 1.25rem;
+  border-radius: 10px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.matrix-v1-secondary-link:hover {
+  border-color: var(--accent);
+  color: var(--text);
+  text-decoration: none;
+}
+
+/* Staff cohort — table demoted, subtle risk */
+.matrix-staff-table-section-title {
+  margin: 0 0 0.35rem;
+  font-size: 0.98rem;
+  font-weight: 600;
+}
+
+.matrix-staff-table-meta {
+  margin: 0;
+  font-size: 0.8rem;
+}
+
+.matrix-staff-table-section {
+  margin-top: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.matrix-staff-table-wrap--secondary {
+  border-color: rgba(255, 255, 255, 0.06);
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.matrix-staff-table--secondary {
+  font-size: 0.78rem;
+  min-width: 46rem;
+}
+
+.matrix-staff-table--secondary th {
+  font-weight: 550;
+  color: var(--muted);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.matrix-staff-table--secondary td {
+  padding-top: 0.55rem;
+  padding-bottom: 0.55rem;
+}
+
+.matrix-staff-action-primary {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--text);
+}
+
+.matrix-staff-action-detail {
+  margin-top: 0.25rem;
+  font-size: 0.76rem;
+  line-height: 1.4;
+  max-width: 17rem;
+}
+
+.matrix-staff-how--tertiary {
+  margin-top: 0.5rem;
+  opacity: 0.88;
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+.matrix-staff-how--tertiary summary {
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.matrix-staff-how-body {
+  padding-top: 0.5rem;
+  max-width: 40rem;
+}
+
+.matrix-staff-how-list {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.matrix-staff-how-foot {
+  margin: 0.65rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.matrix-risk-text {
+  font-size: 0.72rem;
+  font-weight: 500;
+  text-transform: capitalize;
+  color: var(--muted);
+}
+
+.matrix-risk-text-low {
+  color: #7eb89a;
+}
+
+.matrix-risk-text-medium {
+  color: #c9a86a;
+}
+
+.matrix-risk-text-high {
+  color: #c98a8a;
+}
+

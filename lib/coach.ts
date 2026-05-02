@@ -3,11 +3,12 @@
  * Priority when merging actions: 1 inactive → 2 weak topic → 3 incomplete lesson → 4 strong next step.
  */
 
+import { referenceNowForCoachingRules } from "@/lib/coach-time";
 import {
   INACTIVE_DAYS,
   LOW_SCORE_THRESHOLD,
   daysAgo,
-  lastEventTime,
+  lastMeaningfulActivityTime,
   lessonById,
   nextLessonInModule,
   revisionLessonInModule,
@@ -15,7 +16,10 @@ import {
   type DbLesson,
   type DbModule,
   type DbProgress,
+  type DbQuiz,
 } from "@/lib/recommendations";
+import { DEMO_PERSONA_STUDENT_ID } from "@/lib/demo-persona-student-ids";
+import { mergePassiveCoachAction, type PassiveCoachObject } from "@/lib/passive-coach";
 
 export type CoachAction = {
   priority: 1 | 2 | 3 | 4;
@@ -123,10 +127,10 @@ function collectCoachActions(
   events: DbEvent[]
 ): RawAction[] {
   const raw: RawAction[] = [];
-  const now = new Date();
+  const now = referenceNowForCoachingRules(events, progress);
   const cutoff = daysAgo(now, INACTIVE_DAYS);
   const studentEvents = events.filter((e) => e.student_id === studentId);
-  const last = lastEventTime(events, studentId);
+  const last = lastMeaningfulActivityTime(events, progress, studentId);
 
   // 1 — Inactivity / re-engagement
   if (last && last < cutoff) {
@@ -294,12 +298,22 @@ export function getCoachForStudent(
   modules: DbModule[],
   lessons: DbLesson[],
   progress: DbProgress[],
-  events: DbEvent[]
-): { summaries: string[]; actions: CoachAction[] } {
+  events: DbEvent[],
+  quizzes: DbQuiz[] = []
+): { summaries: string[]; actions: CoachAction[]; passiveCoach: PassiveCoachObject | null } {
   const summaries = getTopicSummaries(studentId, modules, lessons, progress, events);
   const candidates = collectCoachActions(studentId, studentName, modules, lessons, progress, events);
-  const actions = mergeCoachActions(candidates, 3);
-  return { summaries, actions };
+  const { merged, passiveCoach } = mergePassiveCoachAction(
+    studentId,
+    studentName,
+    lessons,
+    progress,
+    events,
+    quizzes,
+    candidates
+  );
+  const actions = mergeCoachActions(merged, 3);
+  return { summaries, actions, passiveCoach };
 }
 
 /** Map URL param aspen|emery|jordan or raw UUID to a student row. */
@@ -312,6 +326,7 @@ export function resolveDemoStudent(
 
   const p = param.trim().toLowerCase();
   if (p === "aspen") return students.find((s) => s.name.toLowerCase().includes("aspen")) ?? null;
+  if (p === "drew") return students.find((s) => s.id === DEMO_PERSONA_STUDENT_ID.drewPatel) ?? null;
   if (p === "emery") return students.find((s) => s.name.toLowerCase().includes("emery")) ?? null;
   if (p === "jordan") return students.find((s) => s.name.toLowerCase().includes("jordan")) ?? null;
 

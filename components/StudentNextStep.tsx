@@ -3,7 +3,8 @@ import Link from "next/link";
 export type StudentDemoTab = { slug: string; label: string };
 
 type Props = {
-  keyQ: string;
+  /** @deprecated Optional URL access key — omitted in open demos. */
+  keyQ?: string;
   demoTabs: readonly StudentDemoTab[];
   isDemoTabActive: (slug: string) => boolean;
   firstName: string;
@@ -35,7 +36,11 @@ export function StudentNextStep({
           <span key={t.slug}>
             {i > 0 ? " " : null}
             <Link
-              href={`/student?key=${keyQ}&student=${encodeURIComponent(t.slug)}`}
+              href={
+                keyQ
+                  ? `/student?key=${encodeURIComponent(keyQ)}&student=${encodeURIComponent(t.slug)}`
+                  : `/student?student=${encodeURIComponent(t.slug)}`
+              }
               className={isDemoTabActive(t.slug) ? "demo-student-link demo-student-link-active" : "demo-student-link"}
               prefetch={false}
             >

@@ -4,14 +4,25 @@ import type { CoachAction } from "@/lib/coach";
 export type StudentDemoTab = { slug: string; label: string };
 
 type SwitcherProps = {
-  keyQ: string;
+  /** @deprecated Optional URL access key — omitted in open demos. */
+  keyQ?: string;
   demoTabs: readonly StudentDemoTab[];
   isDemoTabActive: (slug: string) => boolean;
-  route: "student" | "dashboard";
+  /** Ignored when `basePath` is set. */
+  route?: "student" | "dashboard";
+  /** Full path without query (e.g. `/matrix-v1/student`). Overrides `route`. */
+  basePath?: string;
 };
 
-export function DemoStudentSwitcher({ keyQ, demoTabs, isDemoTabActive, route }: SwitcherProps) {
-  const base = route === "student" ? "/student" : "/dashboard";
+export function DemoStudentSwitcher({ keyQ, demoTabs, isDemoTabActive, route = "student", basePath }: SwitcherProps) {
+  const base = basePath ?? (route === "student" ? "/student" : "/dashboard");
+  const hrefForSlug = (slug: string) => {
+    const q = new URLSearchParams();
+    if (keyQ) q.set("key", keyQ);
+    q.set("student", slug);
+    const s = q.toString();
+    return s ? `${base}?${s}` : base;
+  };
   return (
     <p className="demo-student-switcher">
       <span className="demo-student-switcher-label">Viewing demo student:</span>{" "}
@@ -19,7 +30,7 @@ export function DemoStudentSwitcher({ keyQ, demoTabs, isDemoTabActive, route }: 
         <span key={t.slug}>
           {i > 0 ? " " : null}
           <Link
-            href={`${base}?key=${keyQ}&student=${encodeURIComponent(t.slug)}`}
+            href={hrefForSlug(t.slug)}
             className={isDemoTabActive(t.slug) ? "demo-student-link demo-student-link-active" : "demo-student-link"}
             prefetch={false}
           >

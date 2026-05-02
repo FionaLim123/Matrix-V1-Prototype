@@ -3,6 +3,8 @@
  * Plain English: we look at progress + events and apply a few if/then rules.
  */
 
+import { referenceNowForCoachingRules } from "@/lib/coach-time";
+
 export type DbStudent = { id: string; name: string; email: string | null };
 export type DbCourse = { id: string; title: string; slug: string };
 /** Course section (e.g. "Term 1") — named DbModule to avoid clashing with JS `Module`. */
@@ -19,12 +21,22 @@ export type DbProgress = {
   lesson_id: string;
   status: string;
   last_quiz_score_percent: number | null;
+  /** When the row was last written — used with events so inactivity is not wrong if event load fails. */
+  updated_at?: string;
 };
 export type DbEvent = {
   event_type: string;
   student_id: string;
   lesson_id: string | null;
   created_at: string;
+  /** Player / ingest hints (e.g. video index, rewatch). Optional; dashboard loader may omit. */
+  metadata?: Record<string, unknown>;
+};
+
+export type DbQuiz = {
+  id: string;
+  lesson_id: string;
+  title: string;
 };
 
 export type Recommendation = {
@@ -60,12 +72,40 @@ export function nextLessonInModule(lessons: DbLesson[], moduleId: string, afterO
     .sort((a, b) => a.order_index - b.order_index)[0];
 }
 
+function timestampMsFromUnknown(value: unknown): number {
+  if (value == null) return NaN;
+  const t = new Date(String(value)).getTime();
+  return Number.isNaN(t) ? NaN : t;
+}
+
 export function lastEventTime(events: DbEvent[], studentId: string): Date | null {
   const times = events
     .filter((e) => e.student_id === studentId)
-    .map((e) => new Date(e.created_at));
+    .map((e) => timestampMsFromUnknown(e.created_at))
+    .filter((t) => t > 0);
   if (times.length === 0) return null;
-  return new Date(Math.max(...times.map((t) => t.getTime())));
+  return new Date(Math.max(...times));
+}
+
+/**
+ * Latest of behaviour events and progress updates — the coach can treat a student as “recently active”
+ * if we have fresh progress but events were missing, filtered out, or not written yet.
+ */
+export function lastMeaningfulActivityTime(
+  events: DbEvent[],
+  progress: DbProgress[],
+  studentId: string
+): Date | null {
+  const fromEvents = lastEventTime(events, studentId);
+  const rows = progress.filter((p) => p.student_id === studentId);
+  const progressTimes = rows
+    .map((p) => timestampMsFromUnknown(p.updated_at))
+    .filter((t) => t > 0);
+  const fromProgress = progressTimes.length ? new Date(Math.max(...progressTimes)) : null;
+  if (!fromEvents && !fromProgress) return null;
+  if (!fromEvents) return fromProgress;
+  if (!fromProgress) return fromEvents;
+  return fromEvents.getTime() >= fromProgress.getTime() ? fromEvents : fromProgress;
 }
 
 export function buildRecommendations(
@@ -75,7 +115,7 @@ export function buildRecommendations(
   events: DbEvent[]
 ): Recommendation[] {
   const out: Recommendation[] = [];
-  const now = new Date();
+  const now = referenceNowForCoachingRules(events, progress);
   const cutoff = daysAgo(now, INACTIVE_DAYS);
 
   for (const s of students) {
@@ -124,7 +164,7 @@ export function buildRecommendations(
     }
 
     // Rule: no activity for 7 days → suggest restarting with the next lesson in the module
-    const last = lastEventTime(events, s.id);
+    const last = lastMeaningfulActivityTime(events, progress, s.id);
     if (last && last < cutoff) {
       const studentProgress = progress.filter((p) => p.student_id === s.id);
       const sortedByUpdate = [...studentProgress].sort((a, b) => {

@@ -4,30 +4,17 @@ import { DEMO_STUDENT_TABS, demoStudentSlugForLinks } from "@/lib/demo-student-t
 import { loadDashboardData } from "@/lib/dashboard-data";
 import { buildStudentCoachingViewModel } from "@/lib/student-view-model";
 
-type SearchParams = { key?: string; student?: string };
+export const dynamic = "force-dynamic";
+
+type SearchParams = { student?: string };
 
 export default async function StudentCoachPage({
   searchParams,
 }: {
   searchParams: Promise<SearchParams>;
 }) {
-  const { key, student: studentParam } = await searchParams;
-  const secret = process.env.DASHBOARD_SECRET;
+  const { student: studentParam } = await searchParams;
 
-  if (!secret || key !== secret) {
-    return (
-      <>
-        <h1>Your next step</h1>
-        <div className="card error-box">
-          <p style={{ margin: 0 }}>
-            This page is not available. Ask your teacher for the correct link.
-          </p>
-        </div>
-      </>
-    );
-  }
-
-  const keyQ = encodeURIComponent(key);
   let errorMessage: string | null = null;
   let data: Awaited<ReturnType<typeof loadDashboardData>> | null = null;
 
@@ -48,7 +35,7 @@ export default async function StudentCoachPage({
     );
   }
 
-  const { students, modules, lessons, progress, events } = data!;
+  const { students, modules, lessons, progress, events, quizzes } = data!;
 
   if (students.length === 0) {
     return (
@@ -62,15 +49,14 @@ export default async function StudentCoachPage({
   }
 
   const selected = resolveDemoStudent(students, studentParam ?? undefined) ?? students[0];
-  const model = buildStudentCoachingViewModel(selected, modules, lessons, progress, events);
+  const model = buildStudentCoachingViewModel(selected, modules, lessons, progress, events, quizzes);
   const slug = demoStudentSlugForLinks(selected.name, studentParam);
 
-  const staffHref = `/dashboard?key=${keyQ}&student=${encodeURIComponent(slug)}`;
+  const staffHref = `/dashboard?student=${encodeURIComponent(slug)}`;
 
   return (
     <div className="student-next">
       <DemoStudentSwitcher
-        keyQ={keyQ}
         demoTabs={DEMO_STUDENT_TABS}
         isDemoTabActive={(s) => selected.name.toLowerCase().includes(s)}
         route="student"

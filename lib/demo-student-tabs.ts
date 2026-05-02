@@ -2,8 +2,9 @@
 
 export const DEMO_STUDENT_TABS = [
   { slug: "aspen", label: "Aspen Cruz" },
-  { slug: "emery", label: "Emery Walsh" },
-  { slug: "jordan", label: "Jordan Park" },
+  { slug: "drew", label: "Drew Patel" },
+  { slug: "emery", label: "Emery Chen" },
+  { slug: "jordan", label: "Jordan Blake" },
 ] as const;
 
 /** Preserve URL slug when valid; otherwise infer from selected student name. */

@@ -5,32 +5,16 @@ import { loadDashboardData } from "@/lib/dashboard-data";
 import { buildRecommendations } from "@/lib/recommendations";
 import { buildStudentCoachingViewModel } from "@/lib/student-view-model";
 
-type SearchParams = { key?: string; student?: string };
+export const dynamic = "force-dynamic";
+
+type SearchParams = { student?: string };
 
 export default async function DashboardPage({
   searchParams,
 }: {
   searchParams: Promise<SearchParams>;
 }) {
-  const { key, student: studentParam } = await searchParams;
-  const secret = process.env.DASHBOARD_SECRET;
-
-  if (!secret || key !== secret) {
-    return (
-      <>
-        <h1>Dashboard</h1>
-        <div className="card error-box">
-          <p style={{ margin: 0 }}>
-            <strong>Not available.</strong> Add a valid <code>?key=</code> that matches{" "}
-            <code>DASHBOARD_SECRET</code> in <code>.env.local</code>, or set{" "}
-            <code>DASHBOARD_SECRET</code> if it is missing.
-          </p>
-        </div>
-      </>
-    );
-  }
-
-  const keyQ = encodeURIComponent(key);
+  const { student: studentParam } = await searchParams;
 
   let errorMessage: string | null = null;
   let data: Awaited<ReturnType<typeof loadDashboardData>> | null = null;
@@ -58,7 +42,7 @@ export default async function DashboardPage({
     );
   }
 
-  const { students, courses, modules, lessons, progress, events } = data!;
+  const { students, courses, modules, lessons, progress, events, quizzes } = data!;
 
   if (students.length === 0) {
     return (
@@ -73,7 +57,7 @@ export default async function DashboardPage({
 
   const selected = resolveDemoStudent(students, studentParam ?? undefined) ?? students[0];
   const courseTitle = courses.length === 1 ? courses[0].title : courses.map((c) => c.title).join(", ") || null;
-  const coachingModel = buildStudentCoachingViewModel(selected, modules, lessons, progress, events);
+  const coachingModel = buildStudentCoachingViewModel(selected, modules, lessons, progress, events, quizzes);
   const recommendations = buildRecommendations(students, lessons, progress, events);
   const studentName = (id: string) => students.find((s) => s.id === id)?.name ?? id;
 
@@ -82,7 +66,7 @@ export default async function DashboardPage({
     progress.filter((p) => p.student_id === studentId && p.status === "completed").length;
 
   const slug = demoStudentSlugForLinks(selected.name, studentParam);
-  const studentExperienceHref = `/student?key=${keyQ}&student=${encodeURIComponent(slug)}`;
+  const studentExperienceHref = `/student?student=${encodeURIComponent(slug)}`;
 
   return (
     <>
@@ -134,7 +118,6 @@ export default async function DashboardPage({
           <summary>Student coaching signals (example)</summary>
           <div className="student-next dashboard-coaching-slot">
             <DemoStudentSwitcher
-              keyQ={keyQ}
               demoTabs={DEMO_STUDENT_TABS}
               isDemoTabActive={(s) => selected.name.toLowerCase().includes(s)}
               route="dashboard"
