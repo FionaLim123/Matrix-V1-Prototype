@@ -42,6 +42,10 @@ export type TodaysFocusCopy = {
   nextStep: string;
   ctaLabel: string;
   ctaTarget: TodaysFocusCtaTarget;
+  /** Warm, non-accusing one-liner shown above the headline — surfaces the signal that triggered this focus state. Null for ON_TRACK. */
+  signalContext: string | null;
+  /** Shown below the CTA button. Used for PASSIVE state to explain that the quiz lives in the full platform (V2 integration). */
+  ctaByline?: string | null;
 };
 
 export type TodaysFocus = TodaysFocusCopy & {
@@ -276,9 +280,14 @@ export function buildTodaysFocus(input: BuildTodaysFocusInput): TodaysFocusCopy 
   const lid = input.focalLessonId ?? null;
 
   switch (input.state) {
-    case "RETURNING":
+    case "RETURNING": {
+      const dateStr = input.lastActivityDate?.trim();
+      const signalContext = dateStr
+        ? `You were last here ${dateStr}.`
+        : "It looks like you've been away for a little while.";
       return {
         state: input.state,
+        signalContext,
         headline: `Nice to have you back, ${name}. You're in a good position to keep going.`,
         body: "Everything you worked on still counts. One lesson today and you'll be right back in the flow.",
         whyThisMatters: "Picking this up now will make the next lesson much easier to follow.",
@@ -286,11 +295,16 @@ export function buildTodaysFocus(input: BuildTodaysFocusInput): TodaysFocusCopy 
         ctaLabel: "Jump back into lesson",
         ctaTarget: { type: "lesson", lessonId: lid },
       };
+    }
     case "STRUGGLING": {
       const pctRaw = input.score ?? 0;
       const pct = Math.round(Number(pctRaw));
+      const signalContext = pct > 0
+        ? `Last checkpoint: ${pct}%.`
+        : "Your recent results gave us something useful to work with.";
       return {
         state: input.state,
+        signalContext,
         headline: "You're close — let's tighten up this part before moving on.",
         body: `Your last quiz was ${pct}%. You've got the foundations — now we just need to strengthen a few key parts.`,
         whyThisMatters: "Getting this clear now will make the next topics much easier.",
@@ -302,6 +316,7 @@ export function buildTodaysFocus(input: BuildTodaysFocusInput): TodaysFocusCopy 
     case "PASSIVE":
       return {
         state: input.state,
+        signalContext: "You've already watched this lesson — great work getting started.",
         headline: "You've covered the content — now it's time to test it.",
         body: "You've moved through the lesson, but haven't tested your understanding yet. A quick attempt will show exactly where you stand.",
         whyThisMatters:
@@ -309,10 +324,12 @@ export function buildTodaysFocus(input: BuildTodaysFocusInput): TodaysFocusCopy 
         nextStep: quiz,
         ctaLabel: "Go to quiz",
         ctaTarget: { type: "quiz", lessonId: lid },
+        ctaByline: "Quiz opens in the full Matrix+ platform",
       };
     case "ON_TRACK":
       return {
         state: input.state,
+        signalContext: null,
         headline: "You're in a good position to keep moving.",
         body: "Your recent work is in a solid range — keep that momentum going.",
         whyThisMatters: "Staying on track here means the next topic will feel more straightforward.",
@@ -429,22 +446,26 @@ export const COACH_CARD_NEXT_STEP_PREFIX = "Next step:" as const;
 export type TodaysFocusCardCopy = {
   /** Eyebrow fallback when student name omitted in UI chrome; motivational lines come from `TodaysFocus`. */
   label: string;
+  signalContext: string | null;
   headline: string;
   body: string;
   whyMatters: string;
   nextStepPrefix: typeof COACH_CARD_NEXT_STEP_PREFIX;
   nextStepLesson: string;
   ctaLabel: string;
+  ctaByline?: string | null;
 };
 
 export function todaysFocusToCoachCopy(tf: TodaysFocus): TodaysFocusCardCopy {
   return {
     label: "Today's focus",
+    signalContext: tf.signalContext,
     headline: tf.headline,
     body: tf.body,
     whyMatters: tf.whyThisMatters,
     nextStepPrefix: COACH_CARD_NEXT_STEP_PREFIX,
     nextStepLesson: tf.nextStep,
     ctaLabel: tf.ctaLabel,
+    ctaByline: tf.ctaByline ?? null,
   };
 }

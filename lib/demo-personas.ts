@@ -31,7 +31,7 @@ export const DEMO_PERSONAS: Record<PersonaSlug, DemoPersonaRow> = {
     firstName: "Drew",
     coachFallback: {
       lessonName: "Further Trigonometry 2 – Arc Lengths, Area of Sectors and Segments",
-      lastActivityDate: "10 April 2026",
+      lastActivityDate: "10 days ago",
     },
   },
   jordan: {

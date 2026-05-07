@@ -11,7 +11,7 @@ export function HelpSection() {
       </p>
 
       <div className="flex flex-col gap-2 sm:flex-row">
-        <div className="group flex flex-1 items-center gap-2.5 rounded-lg bg-matrix-maroon p-2.5">
+        <div className="flex flex-1 items-center gap-2.5 rounded-lg bg-matrix-maroon p-2.5">
           <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-matrix-red/20">
             <Bot size={15} className="text-matrix-red" />
           </div>
@@ -23,11 +23,11 @@ export function HelpSection() {
           </div>
           <ArrowRight
             size={14}
-            className="ml-auto flex-shrink-0 text-white/40 group-hover:text-white/70"
+            className="ml-auto flex-shrink-0 text-white/40"
           />
         </div>
 
-        <div className="group flex flex-1 items-center gap-2.5 rounded-lg border border-gray-200 bg-white p-2.5">
+        <div className="flex flex-1 items-center gap-2.5 rounded-lg border border-gray-200 bg-white p-2.5">
           <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-matrix-maroon/5">
             <MessageCircle size={15} className="text-matrix-maroon" />
           </div>
@@ -39,7 +39,7 @@ export function HelpSection() {
           </div>
           <ArrowRight
             size={14}
-            className="ml-auto flex-shrink-0 text-gray-300 group-hover:text-matrix-maroon/50"
+            className="ml-auto flex-shrink-0 text-gray-300"
           />
         </div>
       </div>

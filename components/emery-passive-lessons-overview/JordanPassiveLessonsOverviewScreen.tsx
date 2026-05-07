@@ -34,9 +34,7 @@ export function JordanPassiveLessonsOverviewScreen({
             </div>
 
             <main className="h-full min-w-0 flex-1 overflow-y-auto px-8 py-6">
-              <div className="mb-6 flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-gray-900">Lessons</h2>
-              </div>
+              <h2 className="mb-6 text-2xl font-bold text-gray-900">Lessons</h2>
 
               <CoachCard
                 todaysFocus={todaysFocus}

@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 
 import MatrixStudentLessonsCore from "@/components/matrix-v1/MatrixStudentLessonsCore";
+import { StaffStudentContextBanner } from "@/components/matrix-v1/StaffStudentContextBanner";
 import { MatrixStaffDashboard } from "@/components/matrix-v1/MatrixStaffDashboard";
 import type { PrototypePrimaryTab } from "@/components/emery-passive-lessons-overview/EmeryPrototypeNav";
 import { EmeryFlow } from "@/components/emery-passive-lessons-overview/EmeryFlow";
@@ -87,7 +88,10 @@ export default async function V1PrototypePage({
 
   const staffFeedbackBody =
     data && !dashboardError && initialStaffFeedbackStudentId ? (
-      <MatrixStudentLessonsCore studentParam={initialStaffFeedbackStudentId} />
+      <>
+        <StaffStudentContextBanner studentId={initialStaffFeedbackStudentId} data={data} />
+        <MatrixStudentLessonsCore studentParam={initialStaffFeedbackStudentId} />
+      </>
     ) : null;
 
   return (

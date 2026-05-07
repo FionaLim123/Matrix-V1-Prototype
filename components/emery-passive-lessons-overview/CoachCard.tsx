@@ -17,9 +17,18 @@ type Props = {
   onCoachCta?: () => void;
   /** Tooltip when the CTA is disabled (defaults to quiz-prototype copy). */
   disabledCtaHint?: string;
+  /** When true, renders the ctaByline beneath the button (shown after CTA is clicked for PASSIVE state). */
+  showCtaByline?: boolean;
 };
 
-const DEFAULT_DISABLED_HINT = "The formal quiz screen is not wired in this prototype yet.";
+const DEFAULT_DISABLED_HINT = "Coming in the next phase.";
+
+const BORDER_COLOR: Record<string, string> = {
+  RETURNING: "bg-matrix-maroon",
+  STRUGGLING: "bg-matrix-maroon",
+  PASSIVE: "bg-amber-500",
+  ON_TRACK: "bg-emerald-500",
+};
 
 /**
  * Renders `composeTodaysFocus` → `buildTodaysFocus` output only (via {@link todaysFocusToCoachCopy}).
@@ -30,15 +39,18 @@ export function CoachCard({
   onGoToQuiz,
   onCoachCta,
   disabledCtaHint,
+  showCtaByline = false,
 }: Props) {
   const data = todaysFocusToCoachCopy(todaysFocus);
   const runCta = onCoachCta ?? onGoToQuiz;
   const ctaDisabled = runCta == null;
   const name = studentDisplayName.trim();
+  const borderColor = BORDER_COLOR[todaysFocus.state] ?? "bg-matrix-maroon";
+  const showHelp = todaysFocus.state === "RETURNING" || todaysFocus.state === "STRUGGLING";
 
   return (
     <div className="relative mb-4 overflow-hidden rounded-xl border border-[#EAE3DE] bg-[#FFFDFB] shadow-sm">
-      <div className="absolute bottom-0 left-0 top-0 w-1.5 bg-matrix-maroon" aria-hidden />
+      <div className={`absolute bottom-0 left-0 top-0 w-1.5 ${borderColor}`} aria-hidden />
 
       <div className="px-4 py-3 pl-[1.125rem] sm:py-4 sm:pl-6">
         <div className="mb-1 text-[11px] font-bold tracking-wider text-matrix-maroon">
@@ -51,6 +63,10 @@ export function CoachCard({
             <span className="uppercase">{data.label}</span>
           )}
         </div>
+
+        {data.signalContext && (
+          <p className="mb-1.5 text-[12px] italic text-gray-400">{data.signalContext}</p>
+        )}
 
         <h2 className="mb-1.5 text-lg font-bold leading-snug text-gray-900">{data.headline}</h2>
         <p className="mb-3 text-[15px] leading-snug text-gray-600">{data.body}</p>
@@ -66,20 +82,25 @@ export function CoachCard({
               {data.nextStepLesson}
             </p>
 
-            <button
-              type="button"
-              disabled={ctaDisabled}
-              title={ctaDisabled ? (disabledCtaHint ?? DEFAULT_DISABLED_HINT) : undefined}
-              onClick={() => runCta?.()}
-              className="inline-flex items-center justify-center whitespace-nowrap rounded-lg bg-matrix-red px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-red-700 disabled:pointer-events-none disabled:bg-matrix-red disabled:opacity-50 disabled:hover:bg-matrix-red"
-            >
-              {data.ctaLabel}
-              <ArrowRight size={15} className="ml-1.5" aria-hidden />
-            </button>
+            <div className="flex flex-col items-start gap-1 sm:items-end">
+              <button
+                type="button"
+                disabled={ctaDisabled}
+                title={ctaDisabled ? (disabledCtaHint ?? DEFAULT_DISABLED_HINT) : undefined}
+                onClick={() => runCta?.()}
+                className="inline-flex items-center justify-center whitespace-nowrap rounded-lg bg-matrix-red px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-red-700 disabled:pointer-events-none disabled:bg-matrix-red disabled:opacity-50 disabled:hover:bg-matrix-red"
+              >
+                {data.ctaLabel}
+                <ArrowRight size={15} className="ml-1.5" aria-hidden />
+              </button>
+              {data.ctaByline && showCtaByline && (
+                <p className="text-[11px] text-gray-400">{data.ctaByline}</p>
+              )}
+            </div>
           </div>
         </div>
 
-        <HelpSection />
+        {showHelp && <HelpSection />}
       </div>
     </div>
   );

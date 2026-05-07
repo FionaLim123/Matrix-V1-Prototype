@@ -60,7 +60,7 @@ export function EmeryPrototypeNav({
               Matrix+ Intelligence
             </p>
             <p className="matrix-v1-tagline text-xs leading-tight text-slate-400">
-              Guidance &amp; Recovery Layer · V1 demo
+              Guidance &amp; Recovery Layer
             </p>
           </div>
 

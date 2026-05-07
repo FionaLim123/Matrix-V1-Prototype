@@ -122,9 +122,11 @@ export function MatrixStaffDashboard({
               }`}
             >
               <p className="matrix-staff-summary-eyebrow">{COHORT_LABEL[id]}</p>
-              <p className="matrix-staff-summary-count">{n}</p>
+              <div className="matrix-staff-summary-count-block">
+                <p className="matrix-staff-summary-count">{n}</p>
+                <p className="matrix-staff-summary-unit">students</p>
+              </div>
               <p className="muted matrix-staff-summary-pct">{pct(n)}%</p>
-              <p className="muted matrix-staff-summary-meta">{n === 1 ? "1 student" : `${n} students`}</p>
               <p className="matrix-staff-summary-desc">{cardCopy[id].line}</p>
             </Link>
           );
@@ -135,9 +137,9 @@ export function MatrixStaffDashboard({
         <h2 className="matrix-staff-table-section-title">{TABLE_SECTION_HEADING[filter]}</h2>
 
         {filter !== "all" ? (
-          <p className="matrix-staff-table-meta muted">
+          <p className="matrix-staff-table-meta">
             <Link href={staffHref(preserved, "all", basePath)} className="matrix-staff-show-all">
-              View whole class
+              View whole class →
             </Link>
           </p>
         ) : null}
@@ -151,33 +153,33 @@ export function MatrixStaffDashboard({
             <table className="matrix-staff-table matrix-staff-table--secondary">
               <thead>
                 <tr>
+                  <th scope="col">Risk</th>
                   <th scope="col">Student</th>
-                  <th scope="col">Suggested staff action</th>
                   <th scope="col">Current signal</th>
                   <th scope="col">Last activity</th>
-                  <th scope="col">Renewal risk</th>
+                  <th scope="col">Suggested staff action</th>
                   {filter === "all" ? <th scope="col">Group</th> : null}
-                  <th scope="col">View</th>
+                  <th scope="col"></th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.map((row) => (
                   <tr key={row.studentId}>
                     <td>
-                      <strong>{row.label}</strong>
+                      <span className={riskClass(row.renewalRisk)}>{row.renewalRisk}</span>
                     </td>
                     <td>
-                      <span className="matrix-staff-action-primary">{row.staffActionPrimary}</span>
-                      <div className="muted matrix-staff-action-detail">{row.staffActionDetail}</div>
+                      <strong>{row.label}</strong>
                     </td>
                     <td>{row.currentIssue}</td>
                     <td className="muted matrix-staff-nowrap">{row.lastActivity}</td>
                     <td>
-                      <span className={riskClass(row.renewalRisk)}>{row.renewalRisk}</span>
+                      <span className="matrix-staff-action-primary">{row.staffActionPrimary}</span>
+                      <div className="muted matrix-staff-action-detail">{row.staffActionDetail}</div>
                     </td>
                     {filter === "all" ? <td className="muted">{COHORT_LABEL[row.cohort]}</td> : null}
                     <td>
-                      <Link href={resolveStudentHref(row.studentId)}>View</Link>
+                      <Link href={resolveStudentHref(row.studentId)}>View details</Link>
                     </td>
                   </tr>
                 ))}

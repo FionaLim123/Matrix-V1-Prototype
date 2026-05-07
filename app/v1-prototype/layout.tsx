@@ -8,8 +8,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Emery — Passive — Lessons overview (prototype)",
-  description: "Matrix+ UI prototype · step 1",
+  title: "Matrix+ Intelligence",
+  description: "Matrix+ Guidance & Recovery Layer — student coaching and staff intervention demo.",
 };
 
 export default function V1PrototypeLayout({

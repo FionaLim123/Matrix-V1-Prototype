@@ -1,7 +1,6 @@
 /** Demo walkthrough: same tabs on /student and /dashboard. */
 
 export const DEMO_STUDENT_TABS = [
-  { slug: "aspen", label: "Aspen Cruz" },
   { slug: "drew", label: "Drew Patel" },
   { slug: "emery", label: "Emery Chen" },
   { slug: "jordan", label: "Jordan Blake" },

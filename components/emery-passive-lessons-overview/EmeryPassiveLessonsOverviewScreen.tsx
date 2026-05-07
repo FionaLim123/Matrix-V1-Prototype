@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import type { PersonaPrototypePack } from "@/lib/matrix-persona-prototype-pack";
 import { activityFeedMock, lessonsMock } from "./mock-data";
 import { ActivityAnnouncementsSidebar } from "@/components/matrix-lessons";
@@ -7,10 +10,7 @@ import { LessonsNavSidebar } from "./LessonsNavSidebar";
 import { MatrixCourseHeader } from "./MatrixCourseHeader";
 import { MatrixIconRail } from "./MatrixIconRail";
 
-export type EmeryPassiveLessonsOverviewProps = PersonaPrototypePack & {
-  /** Formal quiz/checkpoint handler only — not the in-video micro-check. Omit to disable until a quiz route exists. */
-  onGoToQuiz?: () => void;
-};
+export type EmeryPassiveLessonsOverviewProps = PersonaPrototypePack;
 
 /**
  * Passive persona · lessons overview — coach strip from `composeTodaysFocus` output only.
@@ -18,8 +18,9 @@ export type EmeryPassiveLessonsOverviewProps = PersonaPrototypePack & {
 export function EmeryPassiveLessonsOverviewScreen({
   studentDisplayName,
   todaysFocus,
-  onGoToQuiz,
 }: EmeryPassiveLessonsOverviewProps) {
+  const [quizClicked, setQuizClicked] = useState(false);
+
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-matrix-bg font-sans text-gray-900">
       <div className="flex flex-1 overflow-hidden">
@@ -34,14 +35,13 @@ export function EmeryPassiveLessonsOverviewScreen({
             </div>
 
             <main className="h-full min-w-0 flex-1 overflow-y-auto px-8 py-6">
-              <div className="mb-6 flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-gray-900">Lessons</h2>
-              </div>
+              <h2 className="mb-6 text-2xl font-bold text-gray-900">Lessons</h2>
 
               <CoachCard
                 todaysFocus={todaysFocus}
                 studentDisplayName={studentDisplayName}
-                onGoToQuiz={onGoToQuiz}
+                onGoToQuiz={() => setQuizClicked(true)}
+                showCtaByline={quizClicked}
               />
               <LessonsList lessons={lessonsMock} coachFocusLessonId={todaysFocus.focalLessonId} />
             </main>

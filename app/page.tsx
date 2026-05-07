@@ -1,7 +1,7 @@
 import type { CSSProperties } from "react";
 import Link from "next/link";
 
-const DEMO_STUDENT = "aspen";
+const DEMO_STUDENT = "drew";
 
 export default function HomePage() {
   const studentHref = `/student?student=${DEMO_STUDENT}`;

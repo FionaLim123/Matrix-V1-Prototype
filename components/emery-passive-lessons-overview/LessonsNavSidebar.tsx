@@ -11,11 +11,11 @@ export function LessonsNavSidebar() {
           <BookOpen size={16} className="mr-3 text-matrix-maroon" />
           Lessons
         </div>
-        <div className="flex items-center px-3 py-2.5 text-gray-600 rounded-r-lg font-medium text-sm border-l-4 border-transparent">
+        <div className="flex cursor-default items-center px-3 py-2.5 text-gray-600 rounded-r-lg font-medium text-sm border-l-4 border-transparent">
           <FileText size={16} className="mr-3 text-gray-400" />
           Assignments
         </div>
-        <div className="flex items-center px-3 py-2.5 text-gray-600 rounded-r-lg font-medium text-sm border-l-4 border-transparent">
+        <div className="flex cursor-default items-center px-3 py-2.5 text-gray-600 rounded-r-lg font-medium text-sm border-l-4 border-transparent">
           <MessageSquare size={16} className="mr-3 text-gray-400" />
           Discussion boards
         </div>

@@ -91,6 +91,9 @@ export default async function MatrixStudentLessonsCore({ studentParam }: Props) 
               <span className="matrix-focus-eyebrow-uc">Today&apos;s focus</span>
               <span>, {selected.name}</span>
             </p>
+            {tf.signalContext && (
+              <p className="mb-1 text-[12px] italic text-gray-400">{tf.signalContext}</p>
+            )}
             <h2 id="matrix-focus-heading" className="matrix-focus-title">
               {tf.headline}
             </h2>
