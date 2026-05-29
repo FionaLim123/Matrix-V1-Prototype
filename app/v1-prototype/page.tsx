@@ -2,23 +2,36 @@ import { Suspense } from "react";
 
 import MatrixStudentLessonsCore from "@/components/matrix-v1/MatrixStudentLessonsCore";
 import { StaffStudentContextBanner } from "@/components/matrix-v1/StaffStudentContextBanner";
+import { TeacherActionPanel } from "@/components/matrix-v1/TeacherActionPanel";
 import { MatrixStaffDashboard } from "@/components/matrix-v1/MatrixStaffDashboard";
 import type { PrototypePrimaryTab } from "@/components/emery-passive-lessons-overview/EmeryPrototypeNav";
 import { EmeryFlow } from "@/components/emery-passive-lessons-overview/EmeryFlow";
 import { buildAllPersonaPrototypePacks } from "@/lib/matrix-persona-prototype-pack";
 import { loadDashboardData } from "@/lib/dashboard-data";
 import { isUuidParam } from "@/lib/uuid-param";
+import { buildStaffStudentRows } from "@/lib/matrix-v1-staff-model";
+import { STUDENT_ID_TO_PERSONA_SLUG } from "@/lib/demo-persona-student-ids";
+import {
+  countPendingBatch,
+  getPendingBatchStudentIds,
+  hasNonSeedActionType,
+} from "@/lib/intervention-logs";
+import { resetDemoInterventions } from "@/lib/intervention-actions";
+
+function extractSubject(draft: string | null | undefined): string | null {
+  if (!draft) return null;
+  const nl = draft.indexOf("\n");
+  const line = nl === -1 ? draft : draft.slice(0, nl);
+  return line.startsWith("Subject: ") ? line.slice(9) : line;
+}
 
 function cohortOnlyParams(cohortRaw?: string): URLSearchParams {
   const params = new URLSearchParams();
   const filter =
-    cohortRaw === "all"
-      ? ("all" as const)
-      : cohortRaw === "on_track" || cohortRaw === "needs_nudge" || cohortRaw === "needs_intervention"
-        ? cohortRaw
-        : ("needs_nudge" as const);
-  if (filter === "all") params.set("cohort", "all");
-  else if (filter !== "needs_nudge") params.set("cohort", filter);
+    cohortRaw === "needs_intervention" || cohortRaw === "needs_nudge" || cohortRaw === "on_track"
+      ? cohortRaw
+      : undefined;
+  if (filter) params.set("cohort", filter);
   return params;
 }
 
@@ -46,9 +59,14 @@ function initialTabsFromSearch(sp: { persona?: string; student?: string }): {
 export default async function V1PrototypePage({
   searchParams,
 }: {
-  searchParams: Promise<{ persona?: string; cohort?: string; student?: string }>;
+  searchParams: Promise<{ persona?: string; cohort?: string; student?: string; reset?: string }>;
 }) {
   const sp = await searchParams;
+
+  if (sp.reset === "demo" && process.env.DEMO_RESET_ENABLED === "true") {
+    await resetDemoInterventions();
+  }
+
   const { initialPrimaryTab, initialStaffFeedbackStudentId } = initialTabsFromSearch(sp);
 
   let packsByPersona = null as ReturnType<typeof buildAllPersonaPrototypePacks> | null;
@@ -70,6 +88,25 @@ export default async function V1PrototypePage({
   const preservedStudentQuery =
     hasPersonaTab ? undefined : isUuidParam(trimmedStudentParams) ? trimmedStudentParams : undefined;
 
+  const interventionLogs = data?.interventionLogs ?? [];
+  const pendingBatchCount = countPendingBatch(interventionLogs);
+  const pendingBatchStudentIds = getPendingBatchStudentIds(interventionLogs);
+  const pendingBatchStudents = data
+    ? data.students
+        .filter((s) => pendingBatchStudentIds.includes(s.id))
+        .map((s) => {
+          const log = interventionLogs.find(
+            (l) => l.student_id === s.id && l.action_type === "support" && !l.is_seed && !l.emails_sent_at
+          );
+          return {
+            id: s.id,
+            name: s.name,
+            studentSubject: extractSubject(log?.student_email_draft),
+            parentSubject: extractSubject(log?.parent_email_draft),
+          };
+        })
+    : [];
+
   const staffDashboard =
     data && !dashboardError ? (
       <MatrixStaffDashboard
@@ -83,16 +120,65 @@ export default async function V1PrototypePage({
           const qs = q.toString();
           return qs ? `/v1-prototype?${qs}` : "/v1-prototype";
         }}
+        showResetLink={process.env.DEMO_RESET_ENABLED === "true"}
       />
     ) : null;
 
-  const staffFeedbackBody =
-    data && !dashboardError && initialStaffFeedbackStudentId ? (
+  const backHref = (() => {
+    const q = cohortOnlyParams(sp.cohort);
+    const qs = q.toString();
+    return qs ? `/v1-prototype?${qs}` : "/v1-prototype";
+  })();
+
+  const staffFeedbackBody = (() => {
+    if (!data || dashboardError || !initialStaffFeedbackStudentId) return null;
+    const rows = buildStaffStudentRows(
+      data.students,
+      data.modules,
+      data.lessons,
+      data.progress,
+      data.events,
+      data.quizzes
+    );
+    const row = rows.find((r) => r.studentId === initialStaffFeedbackStudentId);
+    if (!row) return null;
+    const alreadyActioned = hasNonSeedActionType(interventionLogs, initialStaffFeedbackStudentId, "support");
+    const alreadyEscalated = hasNonSeedActionType(
+      interventionLogs,
+      initialStaffFeedbackStudentId,
+      "escalated"
+    );
+    const fn = row.label.split(" ")[0] ?? row.label;
+    const personaSlug = STUDENT_ID_TO_PERSONA_SLUG[initialStaffFeedbackStudentId] ?? null;
+    return (
       <>
-        <StaffStudentContextBanner studentId={initialStaffFeedbackStudentId} data={data} />
+        <StaffStudentContextBanner
+          studentId={initialStaffFeedbackStudentId}
+          data={data}
+          backHref={backHref}
+        />
+        <TeacherActionPanel
+          row={row}
+          alreadyActioned={alreadyActioned}
+          alreadyEscalated={alreadyEscalated}
+        />
+        <div className="mb-3 mt-6 flex items-center justify-between max-w-[42rem]">
+          <h3 className="text-[12px] font-semibold uppercase tracking-wider text-gray-400">
+            What {fn} is currently seeing
+          </h3>
+          {personaSlug && (
+            <a
+              href={`/v1-prototype?persona=${personaSlug}`}
+              className="text-[12px] font-medium text-matrix-maroon hover:underline"
+            >
+              See {fn}&apos;s full experience →
+            </a>
+          )}
+        </div>
         <MatrixStudentLessonsCore studentParam={initialStaffFeedbackStudentId} />
       </>
-    ) : null;
+    );
+  })();
 
   return (
     <Suspense fallback={<div className="h-dvh bg-matrix-bg" aria-hidden />}>
@@ -102,6 +188,8 @@ export default async function V1PrototypePage({
         staffFeedbackBody={staffFeedbackBody}
         packsByPersona={packsByPersona}
         dashboardError={dashboardError}
+        pendingBatchCount={pendingBatchCount}
+        pendingBatchStudents={pendingBatchStudents}
       >
         {staffDashboard}
       </EmeryFlow>

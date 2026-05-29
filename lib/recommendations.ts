@@ -5,7 +5,7 @@
 
 import { referenceNowForCoachingRules } from "@/lib/coach-time";
 
-export type DbStudent = { id: string; name: string; email: string | null };
+export type DbStudent = { id: string; name: string; email: string | null; parent_email: string | null };
 export type DbCourse = { id: string; title: string; slug: string };
 /** Course section (e.g. "Term 1") — named DbModule to avoid clashing with JS `Module`. */
 export type DbModule = { id: string; course_id: string; title: string; order_index: number };

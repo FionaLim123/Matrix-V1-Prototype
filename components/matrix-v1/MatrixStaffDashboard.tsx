@@ -8,18 +8,23 @@ import {
   type CohortKey,
   type StaffStudentRow,
 } from "@/lib/matrix-v1-staff-model";
+import {
+  hasNonSeedActionType,
+  hasSentSupportEmail,
+  type InterventionLog,
+} from "@/lib/intervention-logs";
 
 const PAGE_TITLE = "Year 11 Maths Advanced — Term 2 Cohort";
 
 const COHORT_LABEL: Record<CohortKey, string> = {
   on_track: "On Track",
   needs_nudge: "Needs Nudge",
-  needs_intervention: "Needs Intervention",
+  needs_intervention: "Needs Support",
 };
 
 const TABLE_SECTION_HEADING: Record<CohortKey | "all", string> = {
   all: "All students",
-  needs_intervention: "Students needing intervention",
+  needs_intervention: "Students needing support",
   needs_nudge: "Students who need a nudge",
   on_track: "On track students",
 };
@@ -28,19 +33,17 @@ const COHORT_ORDER: CohortKey[] = ["needs_intervention", "needs_nudge", "on_trac
 
 export type MatrixStaffDashboardProps = {
   data: DashboardData;
-  /** Preserved on cohort links (Matrix+ `?student=`). */
   preservedStudentQuery?: string;
   cohortFilterRaw?: string;
-  /** Base path without query, e.g. `/matrix-v1/staff` or `/emery-passive-lessons-overview`. */
   basePath: string;
   resolveStudentHref: (studentId: string) => string;
   showStudentExperienceFootLink?: boolean;
+  showResetLink?: boolean;
 };
 
 function effectiveFilter(raw: string | undefined): CohortKey | "all" {
-  if (raw === "all") return "all";
-  if (raw === "on_track" || raw === "needs_nudge" || raw === "needs_intervention") return raw;
-  return "needs_nudge";
+  if (raw === "needs_intervention" || raw === "needs_nudge" || raw === "on_track") return raw;
+  return "all";
 }
 
 function staffHref(
@@ -50,25 +53,17 @@ function staffHref(
 ): string {
   const params = new URLSearchParams();
   if (preservedStudent?.trim()) params.set("student", preservedStudent.trim());
-  if (cohort === "all") params.set("cohort", "all");
-  else if (cohort === "needs_nudge") {
-    /* default group — omit cohort in URL */
-  } else {
-    params.set("cohort", cohort);
-  }
+  if (cohort !== "all") params.set("cohort", cohort);
   const str = params.toString();
   return str ? `${basePath}?${str}` : basePath;
 }
 
-function riskClass(r: StaffStudentRow["renewalRisk"]): string {
-  if (r === "high") return "matrix-risk-text matrix-risk-text-high";
-  if (r === "medium") return "matrix-risk-text matrix-risk-text-medium";
-  return "matrix-risk-text matrix-risk-text-low";
-}
+const MOMENTUM_CLASS: Record<CohortKey, string> = {
+  needs_intervention: "font-semibold text-red-600",
+  needs_nudge: "font-semibold text-amber-600",
+  on_track: "font-semibold text-emerald-600",
+};
 
-/**
- * Shared staff cohort UI for `/matrix-v1/staff` and the unified lessons prototype shell.
- */
 export function MatrixStaffDashboard({
   data,
   preservedStudentQuery,
@@ -76,8 +71,9 @@ export function MatrixStaffDashboard({
   basePath,
   resolveStudentHref,
   showStudentExperienceFootLink = false,
+  showResetLink = false,
 }: MatrixStaffDashboardProps) {
-  const { students, modules, lessons, progress, events, quizzes } = data;
+  const { students, modules, lessons, progress, events, quizzes, interventionLogs } = data;
   const filter = effectiveFilter(cohortFilterRaw);
   const rows = buildStaffStudentRows(students, modules, lessons, progress, events, quizzes);
   const counts = cohortCounts(rows);
@@ -89,13 +85,13 @@ export function MatrixStaffDashboard({
 
   const cardCopy: Record<CohortKey, { line: string }> = {
     on_track: {
-      line: "On track with this term’s work — no urgent follow-up needed.",
+      line: "On track with this term's work — parent digest sends automatically.",
     },
     needs_nudge: {
-      line: "Small gaps: an unfinished lesson or a softer result — a prompt usually helps.",
+      line: "Small gaps — nudge emails send automatically; review drafts if needed.",
     },
     needs_intervention: {
-      line: "Not engaging recently or falling behind — worth a direct check-in this week.",
+      line: "Not engaging or falling behind — direct check-in recommended this week.",
     },
   };
 
@@ -153,36 +149,83 @@ export function MatrixStaffDashboard({
             <table className="matrix-staff-table matrix-staff-table--secondary">
               <thead>
                 <tr>
-                  <th scope="col">Risk</th>
+                  <th scope="col">Momentum</th>
                   <th scope="col">Student</th>
-                  <th scope="col">Current signal</th>
-                  <th scope="col">Last activity</th>
-                  <th scope="col">Suggested staff action</th>
-                  {filter === "all" ? <th scope="col">Group</th> : null}
-                  <th scope="col"></th>
+                  <th scope="col" style={{ width: "15rem" }}>Current signal</th>
+                  <th scope="col" style={{ width: "7rem" }}>Last activity</th>
+                  <th scope="col" style={{ width: "12rem" }}>Follow up</th>
+                  <th scope="col" style={{ width: "8rem", minWidth: "8rem" }}>Action</th>
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((row) => (
-                  <tr key={row.studentId}>
-                    <td>
-                      <span className={riskClass(row.renewalRisk)}>{row.renewalRisk}</span>
-                    </td>
-                    <td>
-                      <strong>{row.label}</strong>
-                    </td>
-                    <td>{row.currentIssue}</td>
-                    <td className="muted matrix-staff-nowrap">{row.lastActivity}</td>
-                    <td>
-                      <span className="matrix-staff-action-primary">{row.staffActionPrimary}</span>
-                      <div className="muted matrix-staff-action-detail">{row.staffActionDetail}</div>
-                    </td>
-                    {filter === "all" ? <td className="muted">{COHORT_LABEL[row.cohort]}</td> : null}
-                    <td>
-                      <Link href={resolveStudentHref(row.studentId)}>View details</Link>
-                    </td>
-                  </tr>
-                ))}
+                {filtered.map((row) => {
+                  const emailSent = hasSentSupportEmail(interventionLogs, row.studentId);
+                  const inBatch = !emailSent && hasNonSeedActionType(interventionLogs, row.studentId, "support");
+                  const teacherNotified = hasNonSeedActionType(interventionLogs, row.studentId, "escalated");
+
+                  return (
+                    <tr key={row.studentId}>
+                      <td>
+                        <span className={MOMENTUM_CLASS[row.cohort]}>{COHORT_LABEL[row.cohort]}</span>
+                      </td>
+                      <td>
+                        <strong>{row.label}</strong>
+                      </td>
+                      <td>
+                        <div className="max-w-[15rem]">{row.currentIssue}</div>
+                      </td>
+                      <td className="muted matrix-staff-nowrap">{row.lastActivity}</td>
+                      <td className="muted">
+                        <div className="max-w-[12rem]">{row.staffActionPrimary}</div>
+                      </td>
+                      <td>
+                        {row.cohort === "needs_intervention" && (
+                          emailSent ? (
+                            <Link href={resolveStudentHref(row.studentId)} className="text-[12px] font-semibold text-emerald-700">
+                              ✓ Email sent
+                            </Link>
+                          ) : inBatch ? (
+                            <Link href={resolveStudentHref(row.studentId)} className="text-[12px] font-semibold text-emerald-600">
+                              ✓ In batch
+                            </Link>
+                          ) : teacherNotified ? (
+                            <Link href={resolveStudentHref(row.studentId)} className="text-[12px] text-gray-400">
+                              ✓ Teacher notified
+                            </Link>
+                          ) : (
+                            <Link
+                              href={resolveStudentHref(row.studentId)}
+                              className="inline-flex items-center whitespace-nowrap rounded-full bg-matrix-maroon px-3 py-0.5 text-[11px] font-semibold text-white hover:bg-red-900"
+                            >
+                              Review →
+                            </Link>
+                          )
+                        )}
+                        {row.cohort === "needs_nudge" && (
+                          inBatch ? (
+                            <Link href={resolveStudentHref(row.studentId)} className="text-[12px] font-semibold text-emerald-600">
+                              ✓ Custom batch
+                            </Link>
+                          ) : (
+                            <div className="flex flex-col gap-1">
+                              <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-[11px] font-medium text-amber-700">
+                                ✓ Auto-sending
+                              </span>
+                              <Link href={resolveStudentHref(row.studentId)} className="text-[11px] text-gray-400 hover:text-gray-600 hover:underline">
+                                Review draft →
+                              </Link>
+                            </div>
+                          )
+                        )}
+                        {row.cohort === "on_track" && (
+                          <Link href={resolveStudentHref(row.studentId)} className="text-[12px] text-gray-400 hover:text-gray-600">
+                            View →
+                          </Link>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           )}
@@ -194,11 +237,11 @@ export function MatrixStaffDashboard({
         <div className="matrix-staff-how-body">
           <ul className="matrix-staff-how-list">
             <li>
-              <strong>No meaningful activity for 7 days</strong> — grouped under <em>Needs Intervention</em>{" "}
+              <strong>No meaningful activity for 7 days</strong> — grouped under <em>Needs Support</em>{" "}
               (re-engagement).
             </li>
             <li>
-              <strong>Quiz well below expectations</strong> — <em>Needs Intervention</em> if clearly off-track;
+              <strong>Quiz well below expectations</strong> — <em>Needs Support</em> if clearly off-track;
               otherwise <em>Needs Nudge</em> (revision).
             </li>
             <li>
@@ -219,6 +262,18 @@ export function MatrixStaffDashboard({
           <Link href={resolveStudentHref(firstId)}>View student experience</Link>
         </p>
       ) : null}
+
+      {showResetLink && (
+        <p className="muted matrix-staff-foot" style={{ marginTop: "1.5rem" }}>
+          <Link
+            href={`${basePath}?reset=demo`}
+            className="text-[11px] text-gray-300 hover:text-gray-500"
+            prefetch={false}
+          >
+            ↺ Reset demo
+          </Link>
+        </p>
+      )}
     </div>
   );
 }

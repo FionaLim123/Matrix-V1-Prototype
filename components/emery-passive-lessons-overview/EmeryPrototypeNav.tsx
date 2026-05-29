@@ -14,6 +14,8 @@ type Props = {
   onPrimaryTab: (tab: PrototypePrimaryTab) => void;
   emerySub: EmerySubPrototypeTab;
   onEmerySub: (sub: EmerySubPrototypeTab) => void;
+  pendingBatchCount: number;
+  onReviewBatch: () => void;
 };
 
 function labelPrimary(text: string) {
@@ -47,6 +49,8 @@ export function EmeryPrototypeNav({
   onPrimaryTab,
   emerySub,
   onEmerySub,
+  pendingBatchCount,
+  onReviewBatch,
 }: Props) {
   return (
     <nav
@@ -64,7 +68,7 @@ export function EmeryPrototypeNav({
             </p>
           </div>
 
-          <div className="inline-flex max-w-full flex-wrap items-center justify-center gap-x-8 gap-y-3">
+          <div className="inline-flex max-w-full flex-wrap items-center justify-center gap-x-6 gap-y-3">
             <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2">
             {labelPrimary("Prototype state:")}
             <div role="tablist" aria-label="Persona prototype" className={segPrimary}>
@@ -160,6 +164,19 @@ export function EmeryPrototypeNav({
                 </div>
               </>
             ) : null}
+
+            {pendingBatchCount > 0 && (
+              <>
+                <div className="h-5 w-px shrink-0 bg-white/[0.08]" aria-hidden />
+                <button
+                  type="button"
+                  onClick={onReviewBatch}
+                  className="shrink-0 rounded-lg bg-matrix-maroon px-3 py-1.5 text-[12px] font-semibold text-white shadow-sm hover:bg-red-900"
+                >
+                  Review &amp; Send ({pendingBatchCount})
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>

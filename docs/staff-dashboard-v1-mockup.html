@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Matrix+ Intelligence — Staff Dashboard V1 Mockup</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0B0F1A;
+      color: #E2E8F0;
+      font-size: 14px;
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    /* ── Nav ── */
+    .nav {
+      background: #0D1220;
+      border-bottom: 1px solid #1A2235;
+      padding: 0 32px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .nav-brand {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .nav-brand-plus {
+      background: #E85D26;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      letter-spacing: 0.04em;
+    }
+    .nav-links {
+      display: flex;
+      gap: 4px;
+    }
+    .nav-link {
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      color: #94A3B8;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      background: none;
+    }
+    .nav-link:hover { color: #E2E8F0; background: #1A2235; }
+    .nav-link.active { color: #E2E8F0; background: #1A2235; font-weight: 500; }
+
+    /* ── Layout ── */
+    .main {
+      max-width: 1140px;
+      margin: 0 auto;
+      padding: 40px 32px 80px;
+    }
+
+    /* ── Page title ── */
+    .page-title {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: #F1F5F9;
+      margin-bottom: 32px;
+    }
+
+    /* ── Cohort cards ── */
+    .cohort-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 40px;
+    }
+    .cohort-card {
+      background: #111827;
+      border: 1px solid #1E293B;
+      border-radius: 12px;
+      padding: 20px 22px;
+      cursor: pointer;
+      text-decoration: none;
+      display: block;
+      transition: border-color 0.15s;
+    }
+    .cohort-card:hover { border-color: #334155; }
+    .cohort-card.active { border-color: #3B82F6; background: #111D32; }
+    .cohort-card.active-intervention { border-color: #EF4444; background: #1A1212; }
+    .cohort-card.active-nudge { border-color: #F59E0B; background: #1A1710; }
+    .cohort-card.active-ontrack { border-color: #10B981; background: #101A16; }
+
+    .card-eyebrow {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .card-eyebrow-intervention { color: #EF4444; }
+    .card-eyebrow-nudge { color: #F59E0B; }
+    .card-eyebrow-ontrack { color: #10B981; }
+
+    .card-count-row {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      margin-bottom: 4px;
+    }
+    .card-count { font-size: 36px; font-weight: 800; letter-spacing: -0.04em; color: #F1F5F9; }
+    .card-unit { font-size: 14px; color: #64748B; }
+    .card-pct { font-size: 13px; color: #475569; margin-bottom: 10px; }
+    .card-desc { font-size: 12.5px; color: #64748B; line-height: 1.45; }
+
+    /* Active state indicator */
+    .cohort-card.active-nudge .card-eyebrow { color: #FBBF24; }
+
+    /* ── Table section ── */
+    .table-section { margin-bottom: 28px; }
+    .table-section-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #E2E8F0;
+      margin-bottom: 6px;
+    }
+    .table-meta {
+      font-size: 12.5px;
+      color: #64748B;
+      margin-bottom: 16px;
+    }
+    .table-meta a { color: #60A5FA; text-decoration: none; }
+    .table-meta a:hover { text-decoration: underline; }
+
+    .table-wrap {
+      background: #111827;
+      border: 1px solid #1E293B;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th {
+      text-align: left;
+      font-size: 11.5px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: #475569;
+      padding: 12px 16px;
+      background: #0D1220;
+      border-bottom: 1px solid #1E293B;
+    }
+    td {
+      padding: 16px 16px;
+      vertical-align: top;
+      border-bottom: 1px solid #1A2235;
+      color: #CBD5E1;
+      font-size: 13.5px;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #0F1929; }
+
+    /* ── Risk badges ── */
+    .risk {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 20px;
+    }
+    .risk-high   { color: #FCA5A5; background: rgba(239,68,68,0.12); }
+    .risk-medium { color: #FCD34D; background: rgba(245,158,11,0.12); }
+    .risk-low    { color: #6EE7B7; background: rgba(16,185,129,0.12); }
+    .risk-dot { width: 6px; height: 6px; border-radius: 50%; }
+    .risk-dot-high   { background: #EF4444; }
+    .risk-dot-medium { background: #F59E0B; }
+    .risk-dot-low    { background: #10B981; }
+
+    /* ── Student name ── */
+    .student-name { font-weight: 600; color: #F1F5F9; }
+
+    /* ── Signal text ── */
+    .signal-text { color: #94A3B8; line-height: 1.45; max-width: 280px; }
+
+    /* ── Last activity ── */
+    .last-activity { color: #64748B; white-space: nowrap; }
+
+    /* ── Suggested action ── */
+    .action-primary { font-weight: 500; color: #CBD5E1; margin-bottom: 3px; }
+    .action-detail  { font-size: 12px; color: #64748B; line-height: 1.4; max-width: 220px; }
+
+    /* ── Intervention column ── */
+
+    /* State: no action taken yet */
+    .btn-take-action {
+      background: #1E3A5F;
+      color: #60A5FA;
+      border: 1px solid #2563EB44;
+      border-radius: 7px;
+      padding: 7px 14px;
+      font-size: 12.5px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+      white-space: nowrap;
+    }
+    .btn-take-action:hover { background: #1D4ED8; color: #fff; border-color: #3B82F6; }
+
+    /* State: action logged, outcome pending */
+    .outcome-pending {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .outcome-logged {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      color: #94A3B8;
+    }
+    .outcome-logged-icon { color: #64748B; font-size: 11px; }
+    .outcome-status-waiting {
+      font-size: 12px;
+      color: #F59E0B;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .outcome-status-waiting::before {
+      content: "";
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #F59E0B;
+      flex-shrink: 0;
+    }
+
+    /* State: action logged, positive outcome */
+    .outcome-resolved {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .outcome-status-resolved {
+      font-size: 12px;
+      color: #10B981;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .outcome-status-resolved::before {
+      content: "";
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #10B981;
+      flex-shrink: 0;
+    }
+
+    /* ── About these groups ── */
+    .about-groups {
+      background: #111827;
+      border: 1px solid #1E293B;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .about-groups summary {
+      padding: 14px 18px;
+      font-size: 13px;
+      color: #64748B;
+      cursor: pointer;
+      user-select: none;
+      list-style: none;
+    }
+    .about-groups summary:hover { color: #94A3B8; }
+    .about-groups summary::marker { display: none; }
+    .about-groups-body {
+      padding: 0 18px 18px;
+      border-top: 1px solid #1E293B;
+    }
+    .about-groups-list {
+      list-style: none;
+      padding-top: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .about-groups-list li { font-size: 12.5px; color: #64748B; line-height: 1.5; }
+    .about-groups-list strong { color: #94A3B8; }
+    .about-groups-list em { color: #60A5FA; font-style: normal; }
+
+    /* ── Slide-out panel ── */
+    .overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      z-index: 40;
+    }
+    .overlay.open { display: block; }
+
+    .panel {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 400px;
+      background: #111827;
+      border-left: 1px solid #1E293B;
+      z-index: 50;
+      transform: translateX(100%);
+      transition: transform 0.25s ease;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+    .panel.open { transform: translateX(0); }
+
+    .panel-header {
+      padding: 22px 24px 18px;
+      border-bottom: 1px solid #1E293B;
+    }
+    .panel-close {
+      background: none;
+      border: none;
+      color: #475569;
+      font-size: 20px;
+      cursor: pointer;
+      float: right;
+      line-height: 1;
+      margin-top: -2px;
+    }
+    .panel-close:hover { color: #94A3B8; }
+    .panel-student-name {
+      font-size: 17px;
+      font-weight: 700;
+      color: #F1F5F9;
+      margin-bottom: 4px;
+    }
+    .panel-eyebrow {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: #F59E0B;
+      margin-bottom: 12px;
+    }
+
+    .panel-signal-box {
+      background: #0D1220;
+      border: 1px solid #1E293B;
+      border-left: 3px solid #F59E0B;
+      border-radius: 8px;
+      padding: 12px 14px;
+    }
+    .panel-signal-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #64748B;
+      margin-bottom: 5px;
+    }
+    .panel-signal-text {
+      font-size: 13px;
+      color: #94A3B8;
+      line-height: 1.5;
+    }
+
+    .panel-body { padding: 22px 24px; flex: 1; }
+    .panel-section-label {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: #475569;
+      margin-bottom: 14px;
+    }
+    .action-options { display: flex; flex-direction: column; gap: 10px; }
+
+    .action-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      background: #0D1220;
+      border: 1.5px solid #1E293B;
+      border-radius: 9px;
+      padding: 13px 14px;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .action-option:hover { border-color: #334155; }
+    .action-option.selected { border-color: #3B82F6; background: #0F1E35; }
+    .action-option input[type="radio"] { margin-top: 2px; accent-color: #3B82F6; flex-shrink: 0; }
+    .action-option-content { flex: 1; }
+    .action-option-label { font-size: 13.5px; font-weight: 500; color: #E2E8F0; margin-bottom: 3px; }
+    .action-option-detail { font-size: 12px; color: #64748B; line-height: 1.4; }
+
+    .recommended-tag {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      background: rgba(59,130,246,0.15);
+      color: #60A5FA;
+      padding: 2px 7px;
+      border-radius: 10px;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+
+    .panel-footer {
+      padding: 18px 24px 24px;
+      border-top: 1px solid #1E293B;
+    }
+    .btn-mark-done {
+      width: 100%;
+      background: #1D4ED8;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-mark-done:hover { background: #2563EB; }
+    .panel-cancel {
+      display: block;
+      text-align: center;
+      margin-top: 10px;
+      font-size: 12.5px;
+      color: #475569;
+      cursor: pointer;
+      background: none;
+      border: none;
+      width: 100%;
+    }
+    .panel-cancel:hover { color: #64748B; }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      background: #1A2E1E;
+      border: 1px solid #166534;
+      color: #6EE7B7;
+      padding: 13px 18px;
+      border-radius: 10px;
+      font-size: 13.5px;
+      display: none;
+      z-index: 60;
+      max-width: 300px;
+    }
+    .toast.show { display: block; }
+
+    /* ── Annotation callouts (for demo explanation) ── */
+    .annotation-bar {
+      background: #0A1628;
+      border: 1px dashed #1E3A5F;
+      border-radius: 8px;
+      padding: 14px 18px;
+      margin-bottom: 20px;
+      font-size: 12.5px;
+      color: #475569;
+      line-height: 1.55;
+    }
+    .annotation-bar strong { color: #60A5FA; }
+
+    /* Utility */
+    .muted { color: #64748B; }
+    .nowrap { white-space: nowrap; }
+  </style>
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav class="nav">
+    <div class="nav-brand">
+      Matrix <span class="nav-brand-plus">+</span> Intelligence
+    </div>
+    <div class="nav-links">
+      <a class="nav-link active">Staff view</a>
+      <a class="nav-link">Student view</a>
+    </div>
+  </nav>
+
+  <main class="main">
+
+    <!-- Demo annotation -->
+    <div class="annotation-bar">
+      <strong>Demo mockup — default state.</strong>
+      This is what the staff view looks like when you navigate from the student screen.
+      Default filter: <strong>Needs Nudge</strong> (the most actionable, lowest-friction starting point).
+      Jordan's row shows a pre-seeded intervention outcome. Emery's row has a live "Take action" button — click it.
+    </div>
+
+    <!-- Page title -->
+    <h1 class="page-title">Year 11 Maths Advanced — Term 2 Cohort</h1>
+
+    <!-- Cohort summary cards -->
+    <div class="cohort-cards">
+
+      <!-- Needs Intervention -->
+      <a class="cohort-card" href="#">
+        <p class="card-eyebrow card-eyebrow-intervention">Needs Intervention</p>
+        <div class="card-count-row">
+          <span class="card-count">1</span>
+          <span class="card-unit">student</span>
+        </div>
+        <p class="card-pct">8%</p>
+        <p class="card-desc">Not engaging recently or falling behind — worth a direct check-in this week.</p>
+      </a>
+
+      <!-- Needs Nudge — ACTIVE -->
+      <a class="cohort-card active-nudge" href="#">
+        <p class="card-eyebrow card-eyebrow-nudge">Needs Nudge</p>
+        <div class="card-count-row">
+          <span class="card-count">2</span>
+          <span class="card-unit">students</span>
+        </div>
+        <p class="card-pct">15%</p>
+        <p class="card-desc">Small gaps: an unfinished lesson or a softer result — a prompt usually helps.</p>
+      </a>
+
+      <!-- On Track -->
+      <a class="cohort-card" href="#">
+        <p class="card-eyebrow card-eyebrow-ontrack">On Track</p>
+        <div class="card-count-row">
+          <span class="card-count">10</span>
+          <span class="card-unit">students</span>
+        </div>
+        <p class="card-pct">77%</p>
+        <p class="card-desc">On track with this term's work — no urgent follow-up needed.</p>
+      </a>
+
+    </div>
+
+    <!-- Table section -->
+    <section class="table-section">
+      <h2 class="table-section-title">Students who need a nudge</h2>
+      <p class="table-meta"><a href="#">View whole class →</a></p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Risk</th>
+              <th>Student</th>
+              <th>Current signal</th>
+              <th>Last activity</th>
+              <th>Suggested staff action</th>
+              <th>Intervention</th>
+            </tr>
+          </thead>
+          <tbody>
+
+            <!-- ── JORDAN BLAKE — action logged, outcome pending ── -->
+            <tr>
+              <td>
+                <span class="risk risk-medium">
+                  <span class="risk-dot risk-dot-medium"></span>medium
+                </span>
+              </td>
+              <td><span class="student-name">Jordan Blake</span></td>
+              <td>
+                <span class="signal-text">
+                  Quiz below target in Calculus 2 — concepts may need consolidation before the next lesson.
+                </span>
+              </td>
+              <td><span class="last-activity nowrap">2 days ago</span></td>
+              <td>
+                <p class="action-primary">Consolidate before progressing</p>
+                <p class="action-detail">Short revision on Calculus 2 before layering new material.</p>
+              </td>
+              <td>
+                <!-- State: action logged, outcome still pending -->
+                <div class="outcome-pending">
+                  <div class="outcome-logged">
+                    <span class="outcome-logged-icon">✓</span>
+                    <span>You checked in 5 days ago</span>
+                  </div>
+                  <div class="outcome-status-waiting">
+                    Jordan hasn't retried the quiz yet
+                  </div>
+                </div>
+              </td>
+            </tr>
+
+            <!-- ── EMERY CHEN — no action taken yet ── -->
+            <tr>
+              <td>
+                <span class="risk risk-medium">
+                  <span class="risk-dot risk-dot-medium"></span>medium
+                </span>
+              </td>
+              <td><span class="student-name">Emery Chen</span></td>
+              <td>
+                <span class="signal-text">
+                  Watched 80%+ of the lesson video but hasn't attempted the checkpoint quiz — Calculus 1.
+                </span>
+              </td>
+              <td><span class="last-activity nowrap">Yesterday</span></td>
+              <td>
+                <p class="action-primary">Prompt for concept understanding</p>
+                <p class="action-detail">A quick check that ideas landed before the next topic helps move from watching to doing.</p>
+              </td>
+              <td>
+                <!-- State: no action taken — live button -->
+                <button class="btn-take-action" onclick="openPanel()">Take action</button>
+              </td>
+            </tr>
+
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- About these groups -->
+    <details class="about-groups">
+      <summary>▸ About these groups</summary>
+      <div class="about-groups-body">
+        <ul class="about-groups-list">
+          <li><strong>No meaningful activity for 7 days</strong> — grouped under <em>Needs Intervention</em> (re-engagement).</li>
+          <li><strong>Quiz well below expectations</strong> — <em>Needs Intervention</em> if clearly off-track; otherwise <em>Needs Nudge</em> (revision).</li>
+          <li><strong>Lesson opened but not finished</strong> — <em>Needs Nudge</em>.</li>
+          <li><strong>Video watched, quiz skipped</strong> — <em>Needs Nudge</em> (passive consumption).</li>
+          <li><strong>Otherwise</strong> — <em>On Track</em> for this weekly view.</li>
+        </ul>
+      </div>
+    </details>
+
+  </main>
+
+
+  <!-- ══════════════════════════════════════════ -->
+  <!--  INTERVENTION PANEL (Emery Chen)          -->
+  <!-- ══════════════════════════════════════════ -->
+
+  <div class="overlay" id="overlay" onclick="closePanel()"></div>
+
+  <div class="panel" id="panel">
+
+    <div class="panel-header">
+      <button class="panel-close" onclick="closePanel()">✕</button>
+      <p class="panel-eyebrow">Needs Nudge · Passive consumption</p>
+      <p class="panel-student-name">Emery Chen</p>
+
+      <div class="panel-signal-box">
+        <p class="panel-signal-label">What the system detected</p>
+        <p class="panel-signal-text">
+          Emery watched the full lesson video in Calculus 1 but hasn't attempted the checkpoint quiz.
+          This is a passive consumption pattern — content watched does not mean content understood.
+        </p>
+      </div>
+    </div>
+
+    <div class="panel-body">
+      <p class="panel-section-label">What would you like to do?</p>
+      <div class="action-options" id="action-options">
+
+        <label class="action-option selected" onclick="selectOption(this)">
+          <input type="radio" name="action" value="prompt_quiz" checked />
+          <div class="action-option-content">
+            <p class="action-option-label">
+              Prompt Emery to attempt the quiz
+              <span class="recommended-tag">Recommended</span>
+            </p>
+            <p class="action-option-detail">
+              A quick nudge before the next lesson helps confirm concepts have landed before Calculus 2.
+            </p>
+          </div>
+        </label>
+
+        <label class="action-option" onclick="selectOption(this)">
+          <input type="radio" name="action" value="flag_tutor" />
+          <div class="action-option-content">
+            <p class="action-option-label">Flag for tutor follow-up</p>
+            <p class="action-option-detail">
+              Pass to their tutor for a brief concept check in the next session.
+            </p>
+          </div>
+        </label>
+
+        <label class="action-option" onclick="selectOption(this)">
+          <input type="radio" name="action" value="no_action" />
+          <div class="action-option-content">
+            <p class="action-option-label">No action needed right now</p>
+            <p class="action-option-detail">
+              Passive consumption isn't always a problem — note it and monitor.
+            </p>
+          </div>
+        </label>
+
+      </div>
+    </div>
+
+    <div class="panel-footer">
+      <button class="btn-mark-done" onclick="markDone()">Mark as done</button>
+      <button class="panel-cancel" onclick="closePanel()">Cancel</button>
+    </div>
+
+  </div>
+
+  <!-- Toast confirmation -->
+  <div class="toast" id="toast">
+    ✓ Logged — we'll watch for Emery's next action
+  </div>
+
+
+  <script>
+    function openPanel() {
+      document.getElementById('overlay').classList.add('open');
+      document.getElementById('panel').classList.add('open');
+    }
+
+    function closePanel() {
+      document.getElementById('overlay').classList.remove('open');
+      document.getElementById('panel').classList.remove('open');
+    }
+
+    function selectOption(el) {
+      document.querySelectorAll('.action-option').forEach(o => o.classList.remove('selected'));
+      el.classList.add('selected');
+      el.querySelector('input').checked = true;
+    }
+
+    function markDone() {
+      closePanel();
+
+      // Update Emery's row in the table
+      const emeryBtn = document.querySelector('.btn-take-action');
+      if (emeryBtn) {
+        const td = emeryBtn.closest('td');
+        td.innerHTML = `
+          <div class="outcome-pending">
+            <div class="outcome-logged">
+              <span class="outcome-logged-icon">✓</span>
+              <span>You checked in just now</span>
+            </div>
+            <div class="outcome-status-waiting">
+              We'll watch for Emery's next action
+            </div>
+          </div>`;
+      }
+
+      // Show toast
+      const toast = document.getElementById('toast');
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+  </script>
+
+</body>
+</html>

@@ -28,3 +28,6 @@ next-env.d.ts
 
 # vercel
 .vercel
+
+# interview prep — keep local only, not on GitHub
+role-prep/

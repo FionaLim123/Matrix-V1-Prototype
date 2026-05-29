@@ -8,6 +8,7 @@ import {
   type DbQuiz,
   type DbStudent,
 } from "@/lib/recommendations";
+import { loadInterventionLogs, type InterventionLog } from "@/lib/intervention-logs";
 
 export type DashboardData = {
   students: DbStudent[];
@@ -17,6 +18,7 @@ export type DashboardData = {
   progress: DbProgress[];
   events: DbEvent[];
   quizzes: DbQuiz[];
+  interventionLogs: InterventionLog[];
 };
 
 /**
@@ -59,8 +61,8 @@ async function loadEventsForDashboardStudents(
 export async function loadDashboardData(): Promise<DashboardData> {
   const supabase = createAdminClient();
 
-  const [sRes, cRes, mRes, lRes, pRes, qRes] = await Promise.all([
-    supabase.from("students").select("id, name, email").order("name"),
+  const [sRes, cRes, mRes, lRes, pRes, qRes, interventionLogs] = await Promise.all([
+    supabase.from("students").select("id, name, email, parent_email").order("name"),
     supabase.from("courses").select("id, title, slug").order("title"),
     supabase.from("modules").select("id, course_id, title, order_index").order("order_index"),
     supabase.from("lessons").select("id, module_id, title, is_revision, order_index").order("order_index"),
@@ -68,6 +70,7 @@ export async function loadDashboardData(): Promise<DashboardData> {
       .from("student_progress")
       .select("student_id, lesson_id, status, last_quiz_score_percent, updated_at"),
     supabase.from("quizzes").select("id, lesson_id, title").order("lesson_id"),
+    loadInterventionLogs().catch(() => [] as InterventionLog[]),
   ]);
 
   if (sRes.error) throw sRes.error;
@@ -89,5 +92,6 @@ export async function loadDashboardData(): Promise<DashboardData> {
     progress: (pRes.data ?? []) as DbProgress[],
     events,
     quizzes: (qRes.data ?? []) as DbQuiz[],
+    interventionLogs: interventionLogs as InterventionLog[],
   };
 }

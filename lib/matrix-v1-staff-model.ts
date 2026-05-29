@@ -16,6 +16,7 @@ import {
   type DbQuiz,
   type DbStudent,
 } from "@/lib/recommendations";
+import { DEMO_PERSONA_STUDENT_ID } from "@/lib/demo-persona-student-ids";
 
 export type CohortKey = "on_track" | "needs_nudge" | "needs_intervention";
 
@@ -30,6 +31,10 @@ export type StaffStudentRow = {
   staffActionPrimary: string;
   staffActionDetail: string;
   renewalRisk: RenewalRisk;
+  studentEmail: string | null;
+  parentEmail: string | null;
+  studentEmailDraft: string;
+  parentEmailDraft: string;
 };
 
 const SEVERE_SCORE = 55;
@@ -253,12 +258,75 @@ function staffSuggestedAction(profile: StaffProfile): { primary: string; detail:
   }
 }
 
+function firstName(name: string): string {
+  return name.split(" ")[0] ?? name;
+}
+
+const DEMO_STUDENT_EMAIL: Partial<Record<string, string>> = {
+  [DEMO_PERSONA_STUDENT_ID.drewPatel]: `Subject: Just checking in, Drew\n\nHi Drew, I noticed you haven't logged into Matrix+ for a little while and wanted to check in. It happens — life gets busy, and sometimes it's hard to find the rhythm again.\n\nThe good news is you're in a solid position with your work. When you're ready, picking up from where you left off is simpler than it might feel right now.\n\nIf there's anything on your mind, just reply to this email.\n\n— Ms Jessica Luong, Year 11 Maths Advanced`,
+  [DEMO_PERSONA_STUDENT_ID.jordanBlake]: `Subject: Your Calculus 2 progress — a quick note\n\nHi Jordan, I can see you've been putting in the effort in Calculus 2 — attempting the checkpoint is exactly the right approach. Your recent result tells me some of the concepts might benefit from a bit more consolidation before you move forward, which is completely normal at this stage.\n\nWhen you next log in, Today's Focus will show you exactly where to start — it's already pointing you to the right place.\n\n— Ms Jessica Luong, Year 11 Maths Advanced`,
+  [DEMO_PERSONA_STUDENT_ID.emeryChen]: `Subject: Great work on the lesson, Emery — one more step\n\nHi Emery, great work keeping up with the lesson videos in Calculus 1 — you've been consistent and that matters. The next step is to test your understanding with the checkpoint quiz.\n\nIt's not about getting everything right — it's about finding out what's landed and what might need a second look. Give it a go when you're ready. You're in a good position.\n\n— Ms Jessica Luong, Year 11 Maths Advanced`,
+};
+
+const DEMO_PARENT_EMAIL: Partial<Record<string, string>> = {
+  [DEMO_PERSONA_STUDENT_ID.drewPatel]: `Subject: A quick update on Drew's Matrix+ progress\n\nDear Drew's parent,\n\nI wanted to reach out with a brief update on Drew's recent engagement with Matrix+ for Year 11 Maths Advanced.\n\nDrew has been doing solid work this term, but we've noticed he hasn't logged in recently. This isn't unusual — students sometimes need a nudge to re-establish their study rhythm at this point in the term.\n\nOur student success team will be in touch with you directly over the next day or two. In the meantime, a quiet check-in at home can make all the difference.\n\n— Ms Jessica Luong, Year 11 Maths Advanced, Matrix Education`,
+  [DEMO_PERSONA_STUDENT_ID.jordanBlake]: `Subject: Jordan's Maths Advanced progress — week update\n\nDear Jordan's parent,\n\nHere's a brief update on Jordan's progress in Year 11 Maths Advanced.\n\nJordan has been engaging with the course and attempting her checkpoints — which is exactly the right approach. Her most recent Calculus 2 result was slightly below the expected level, which tells us some consolidation would help before she moves forward.\n\nNo alarm needed — this is exactly the kind of early signal we watch for. A quiet check-in at home about how study is going is always helpful.\n\n— Ms Jessica Luong, Year 11 Maths Advanced, Matrix Education`,
+  [DEMO_PERSONA_STUDENT_ID.emeryChen]: `Subject: Emery's Maths Advanced progress — week update\n\nDear Emery's parent,\n\nA quick update on Emery's recent activity in Year 11 Maths Advanced.\n\nEmery has been consistently watching the lesson videos — a great habit. The next step in her learning path is to complete the checkpoint quiz for Calculus 1, which will confirm the concepts have landed before she moves on. Matrix+ has already sent her a gentle reminder.\n\nIf you get a chance to check in at home about how her study is going, that always helps.\n\n— Ms Jessica Luong, Year 11 Maths Advanced, Matrix Education`,
+};
+
+function generateStudentEmailDraft(profile: StaffProfile, student: DbStudent): string {
+  const override = DEMO_STUDENT_EMAIL[student.id];
+  if (override) return override;
+
+  const fn = firstName(student.name);
+  const sig = "\n\n— Ms Jessica Luong, Year 11 Maths Advanced";
+  switch (profile.kind) {
+    case "disengagement":
+      return `Subject: ${fn}, we noticed you've been away — we're here to help\n\nHi ${fn},\n\nWe noticed you haven't logged in to your Year 11 Maths Advanced course for a little while, and we wanted to check in.\n\nWe know Term 2 can get busy, and sometimes it's hard to know where to start when you've had a break. The good news is that your progress is all saved — when you next log in, Today's Focus will show you exactly where to pick up.\n\nIf there's anything on your mind, just reply to this email and we'll get back to you.${sig}`;
+    case "low_quiz_severe":
+      return `Subject: ${fn}, let's get you back on track in ${profile.topic}\n\nHi ${fn},\n\nYour teacher has noticed that your recent ${profile.topic} checkpoint was below target, and we want to make sure you get the support you need.\n\nDon't worry — when you next log in, Today's Focus will guide you to exactly the right starting point. If you're finding the concepts tricky, your teacher is here to help — just reply to this email if you'd like to arrange a time to chat.${sig}`;
+    case "concept_gap_nudge":
+      return `Subject: ${fn}, a quick note on your Maths progress\n\nHi ${fn},\n\nWell done for keeping up with your Year 11 Maths — you're making solid progress!\n\nWe noticed your recent ${profile.topic} checkpoint came in a little below your usual standard. That's completely normal — it's one of the trickier topics this term. When you next log in, Today's Focus will show you exactly where to start to build your confidence back up.\n\nKeep going — small steps this week will make a real difference!${sig}`;
+    case "incomplete":
+      return `Subject: ${fn}, you're almost there — finish off ${profile.topic}\n\nHi ${fn},\n\nYou're so close! You started ${profile.lessonTitle} but haven't quite finished it yet.\n\nWhen you next log in, Today's Focus will take you straight back to where you left off. Even 20 minutes this week will get you across the line.${sig}`;
+    case "passive_consumption":
+      return `Subject: ${fn}, great effort on the lesson — now try the checkpoint!\n\nHi ${fn},\n\nNice work getting through the ${profile.topic} lesson! The next step is the checkpoint quiz — it only takes a few minutes and helps lock in what you've just learned.\n\nWhen you next log in, Today's Focus will take you straight there.${sig}`;
+    default:
+      return "";
+  }
+}
+
+function generateParentEmailDraft(profile: StaffProfile, student: DbStudent): string {
+  const override = DEMO_PARENT_EMAIL[student.id];
+  if (override) return override;
+
+  const fn = firstName(student.name);
+  const sig = "\n\n— Ms Jessica Luong, Year 11 Maths Advanced, Matrix Education";
+  switch (profile.kind) {
+    case "disengagement":
+      return `Subject: An update on ${fn}'s progress in Year 11 Maths Advanced\n\nDear parent or guardian,\n\nWe're writing to let you know that ${fn} hasn't logged in to their Year 11 Maths Advanced course for the past 10 days. We wanted to make sure you were aware in case there's something we can help with.\n\n${fn}'s teacher has been notified, and our student success team will reach out to ${fn} directly this week to help them get back on track.\n\nIf you'd like to discuss ${fn}'s progress, please don't hesitate to reply to this email.${sig}`;
+    case "low_quiz_severe":
+      return `Subject: An update on ${fn}'s progress — ${profile.topic}\n\nDear parent or guardian,\n\n${fn}'s teacher has flagged that their recent ${profile.topic} checkpoint came in significantly below target. We want to make sure ${fn} gets the right support before this affects their broader progress.\n\n${fn}'s teacher has been notified and will follow up directly. Our student success team will also be in touch this week.\n\nIf you'd like to discuss further, please reply to this email.${sig}`;
+    case "concept_gap_nudge":
+      return `Subject: ${fn}'s weekly Maths progress update\n\nDear parent or guardian,\n\nHere's a quick update on ${fn}'s Year 11 Maths Advanced course this week.\n\n${fn} has been actively working through the course. Their recent ${profile.topic} checkpoint came in a little below target, so their personalised learning path has been updated to focus on consolidating those concepts.\n\nNo action is needed from you — ${fn}'s Today's Focus has been updated to guide them to the right next step. We'll keep you posted each week.${sig}`;
+    case "incomplete":
+      return `Subject: ${fn}'s weekly Maths progress update\n\nDear parent or guardian,\n\nA quick update on ${fn}'s Year 11 Maths Advanced course this week.\n\n${fn} has made a good start on ${profile.lessonTitle} — they just need to complete the final step. Today's Focus will guide them straight back to where they left off.\n\nNo action needed from you. We'll keep you updated each week.${sig}`;
+    case "passive_consumption":
+      return `Subject: ${fn}'s weekly Maths progress update\n\nDear parent or guardian,\n\nA quick update on ${fn}'s Year 11 Maths Advanced course.\n\n${fn} has been watching their ${profile.topic} lesson — great effort! The next step is the checkpoint quiz, which helps consolidate what they've learned. Today's Focus will guide them there.\n\nNo action needed from you.${sig}`;
+    case "steady":
+      return `Subject: ${fn}'s weekly Maths progress update\n\nDear parent or guardian,\n\nGreat news — ${fn} is on track with their Year 11 Maths Advanced course this week. They've been making steady progress and there's nothing urgent to flag.\n\nWe'll continue to send you a weekly digest each week.${sig}`;
+    default:
+      return "";
+  }
+}
+
 type RowDraft = {
   student: DbStudent;
   top: CoachAction | undefined;
   cohort: CohortKey;
   renewalRisk: RenewalRisk;
   lastActivity: string;
+  lastActivityTs: number; // ms epoch, 0 = no activity; used for sort only
 };
 
 /** One row per student — same signals as student-facing coaching; staff-only copy for the table. */
@@ -281,8 +349,9 @@ export function buildStaffStudentRows(
 
     const last = lastMeaningfulActivityTime(events, progress, s.id);
     const lastActivity = last ? formatLastActivityRelative(last, referenceNow) : "No activity logged yet";
+    const lastActivityTs = last?.getTime() ?? 0;
 
-    drafts.push({ student: s, top, cohort, renewalRisk, lastActivity });
+    drafts.push({ student: s, top, cohort, renewalRisk, lastActivity, lastActivityTs });
   }
 
   const inactiveSorted = drafts
@@ -300,6 +369,8 @@ export function buildStaffStudentRows(
     const profile = deriveStaffProfile(d.top, d.cohort, modules, lessons, inactiveVar, d.student.id);
     const currentIssue = staffCurrentSignal(profile);
     const { primary, detail } = staffSuggestedAction(profile);
+    const studentEmailDraft = d.cohort === "on_track" ? "" : generateStudentEmailDraft(profile, d.student);
+    const parentEmailDraft = generateParentEmailDraft(profile, d.student);
 
     return {
       studentId: d.student.id,
@@ -310,16 +381,29 @@ export function buildStaffStudentRows(
       staffActionPrimary: primary,
       staffActionDetail: detail,
       renewalRisk: d.renewalRisk,
+      studentEmail: d.student.email,
+      parentEmail: d.student.parent_email,
+      studentEmailDraft,
+      parentEmailDraft,
     };
   });
 
-  /** On track first (then nudge, intervention) so “whole class” matches card order 5 / 4 / 3. */
+  /** Intervention first, then nudge, then on track — priority ordering for staff triage. */
   const order: Record<CohortKey, number> = {
-    on_track: 0,
+    needs_intervention: 0,
     needs_nudge: 1,
-    needs_intervention: 2,
+    on_track: 2,
   };
-  rows.sort((a, b) => order[a.cohort] - order[b.cohort] || a.label.localeCompare(b.label));
+  const tsById = new Map(drafts.map((d) => [d.student.id, d.lastActivityTs]));
+  rows.sort((a, b) => {
+    const cohortDiff = order[a.cohort] - order[b.cohort];
+    if (cohortDiff !== 0) return cohortDiff;
+    if (a.cohort === "needs_intervention") {
+      // Longest away first (lowest timestamp = furthest in the past)
+      return (tsById.get(a.studentId) ?? 0) - (tsById.get(b.studentId) ?? 0);
+    }
+    return a.label.localeCompare(b.label);
+  });
 
   return rows;
 }
