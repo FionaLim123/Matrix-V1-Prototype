@@ -248,6 +248,10 @@ export function MatrixStaffDashboard({
               <strong>Lesson opened but not finished</strong> — <em>Needs Nudge</em>.
             </li>
             <li>
+              <strong>Video lesson watched but checkpoint quiz not attempted</strong> — <em>Needs Nudge</em>{" "}
+              (passive consumption).
+            </li>
+            <li>
               <strong>Otherwise</strong> — <em>On Track</em> for this weekly view.
             </li>
           </ul>
